@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="UI Suite">
+    <listeners>
+        <listener class-name="org.tab.utils.ExtentReport.ExtentTestListener"/>
+    </listeners>
+    <test name="Smoke">
+        <classes>
+            <class name="org.tab.tests.LoginPageTest"/>
+        </classes>
+    </test>
+</suite>
