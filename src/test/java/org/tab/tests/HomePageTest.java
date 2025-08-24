@@ -10,6 +10,7 @@ import org.testng.annotations.Test;
 
 import static org.tab.core.instance.DriverManager.getDriver;
 import static org.tab.data.TestDataReader.getXMLData;
+import static org.tab.utils.common.SharedMethods.login;
 import static org.tab.utils.common.SharedMethods.waitUntilElementClickable;
 
 @Listeners(ExtentTestListener.class)
@@ -17,6 +18,7 @@ public class HomePageTest extends Base {
 
     @Test (description = "user able to click side menu")
     public void clickSideMenu() {
+        login();
         HomePage homePage = new HomePage(driver);
         waitUntilElementClickable(homePage.inventoryMenu);
         homePage.inventoryMenu.click();

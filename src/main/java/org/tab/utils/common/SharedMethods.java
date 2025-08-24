@@ -6,6 +6,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.tab.web_pages.LoginPage;
 
 import java.time.Duration;
 import java.util.Calendar;
@@ -92,5 +93,10 @@ public class SharedMethods {
     public static void pageBottom(){
         JavascriptExecutor js = (JavascriptExecutor) getDriver();
         js.executeScript("window.scrollBy(0,document.body.scrollHeight)", "");
+    }
+
+    public static void login(){
+        LoginPage loginPage = new LoginPage(getDriver());
+        loginPage.doLogin();
     }
 }

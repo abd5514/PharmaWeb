@@ -5,6 +5,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 
+import static org.tab.data.TestDataReader.getXMLData;
+
 public class LoginPage {
 
 
@@ -22,5 +24,9 @@ public class LoginPage {
         PageFactory.initElements(driver, this);
     }
 
-
+    public void doLogin(){
+        emailInput.sendKeys(getXMLData("username"));
+        passwordInput.sendKeys(getXMLData("password"));
+        loginBtn.click();
+    }
 }
