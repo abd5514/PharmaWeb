@@ -16,6 +16,7 @@ public class LoginPageTest extends Base {
     @Test (description = "user able to login with valid credentials")
     public void Login() {
         LoginPage loginPage = new LoginPage(driver);
+        waitUntilElementClickable(loginPage.emailInput);
         loginPage.emailInput.sendKeys(getXMLData("username"));
         loginPage.passwordInput.sendKeys(getXMLData("password"));
         loginPage.loginBtn.click();
