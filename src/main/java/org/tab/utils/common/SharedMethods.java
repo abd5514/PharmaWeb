@@ -74,7 +74,6 @@ public class SharedMethods {
     {
         JavascriptExecutor js = (JavascriptExecutor) getDriver ();
         js.executeScript("arguments[0].scrollIntoView()", Locator);
-        //js.executeScript("document.getElementByXpath('"+ Locator +"').click();");
         js.executeScript("arguments[0].click()", Locator);
     }
 
@@ -99,4 +98,22 @@ public class SharedMethods {
         LoginPage loginPage = new LoginPage(getDriver());
         loginPage.doLogin();
     }
+
+    public static void staticWait(int milliseconds){
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String generateRandomString(int length) {
+        boolean useLetters = true;
+        boolean useNumbers = false;
+        java.util.Random rand = new java.util.Random();
+        int number   = 1000 + rand.nextInt(9000);
+        return (org.apache.commons.lang3.RandomStringUtils.random(length, useLetters, useNumbers) + number);
+    }
+
+
 }
