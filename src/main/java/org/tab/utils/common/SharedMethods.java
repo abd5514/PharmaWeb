@@ -10,6 +10,7 @@ import org.tab.web_pages.LoginPage;
 
 import java.time.Duration;
 import java.util.Calendar;
+import java.util.Random;
 import java.util.TimeZone;
 
 import static org.tab.core.instance.DriverManager.getDriver;
@@ -113,6 +114,11 @@ public class SharedMethods {
         java.util.Random rand = new java.util.Random();
         int number   = 1000 + rand.nextInt(9000);
         return (org.apache.commons.lang3.RandomStringUtils.random(length, useLetters, useNumbers) + number);
+    }
+
+    public static int generateRandomNumber(int length) {
+        Random rand = new java.util.Random();
+        return rand.nextInt(length);
     }
 
 

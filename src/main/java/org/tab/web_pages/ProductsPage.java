@@ -6,30 +6,32 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.Select;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import static org.tab.utils.common.SharedMethods.generateRandomNumber;
 
 public class ProductsPage {
 
     @FindBy (xpath="//button[@id='new_model']")
     public WebElement addNewProductBtn;
-    /*@FindBy (id="name")
+    @FindBy (xpath="(//input[@id='name'])[2]")
     public WebElement productNameInput;
-    @FindBy (id="category_id")
-    public WebElement categoryDDL;
-    @FindBy (id="selling_unit_id")
-    public WebElement sellingUnitDDL;
-    @FindBy (id="tax_id")
-    public WebElement taxDDL;
-    @FindBy (id="cost")
-    public WebElement costInput;
-    @FindBy (id="gross_price")
-    public WebElement grossPriceInput;
-    @FindBy (xpath="//button[@name='continue']")
-    public WebElement saveAndContinueBtn;*/
+    @FindBy (id="local_name")
+    public WebElement productLocalNameInput;
+    @FindBy (xpath="//button[normalize-space()='Update']")
+    public WebElement updateBtn;
     @FindBy (xpath="//form[contains(@action, \"/dashboard/products\")]")
     public WebElement form;
     @FindBy (xpath="//div[@id='newModal']")
     public WebElement formMainDiv;
+    @FindBy (xpath="(//table[@id='products-table']//a[@title='Edit'])")
+    public List<WebElement> editBtns;
+    @FindBy (xpath="(//button[@title='Delete'])")
+    public List<WebElement> deleteBtns;
+    @FindBy (xpath="//button[normalize-space()='Delete' and @type='submit']")
+    public WebElement deleteConfirmBtn;
 
 
 
@@ -73,5 +75,13 @@ public class ProductsPage {
             System.out.println("❌ Failed to fill form: " + e.getMessage());
             throw e;
         }
+    }
+
+    public void editOrDeleteBtnsClick(List<WebElement> locator){
+        if (locator.isEmpty()) {
+            throw new NoSuchElementException("❌ No Edit links found in products table.");
+        }
+        int id= generateRandomNumber(locator.size());
+        locator.get(0).click();
     }
 }
