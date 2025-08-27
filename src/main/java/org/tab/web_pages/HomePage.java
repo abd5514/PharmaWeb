@@ -39,6 +39,8 @@ public class HomePage {
     public WebElement settingsMenu;
     @FindBy (xpath="//a[contains(@href, \"/dashboard/products\")]")
     public WebElement productsMenu;
+    @FindBy (xpath="//a[contains(@href, \"/dashboard/purchase-receives\")]")
+    public WebElement purchaseOrderMenu;
 
 
     public HomePage(WebDriver driver) {

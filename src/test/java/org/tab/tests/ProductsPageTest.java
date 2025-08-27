@@ -57,6 +57,5 @@ public class ProductsPageTest extends Base {
         productsPage.editOrDeleteBtnsClick(productsPage.deleteBtns);
         waitUntilElementClickable(productsPage.deleteConfirmBtn);
         productsPage.deleteConfirmBtn.click();
-
     }
 }
