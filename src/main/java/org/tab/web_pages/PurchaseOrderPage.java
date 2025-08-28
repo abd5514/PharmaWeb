@@ -1,6 +1,5 @@
 package org.tab.web_pages;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -10,7 +9,6 @@ import org.openqa.selenium.support.ui.Select;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 import static org.tab.utils.common.SharedMethods.*;
 
@@ -44,6 +42,18 @@ public class PurchaseOrderPage {
     public WebElement lotDDL;
     @FindBy (xpath="//button[normalize-space()='Confirm']")
     public WebElement lotConfirmBtn;
+    @FindBy (xpath="//input[@name='create_new_lot[]']")
+    public WebElement createNewLotCheckbox;
+    @FindBy (xpath="//label[normalize-space()='Create New LOT']")
+    public WebElement createNewLotLabel;
+    @FindBy (xpath="//input[@name='lot_number[]']")
+    public WebElement lotNumber;
+    @FindBy (xpath="//select[@name='day[]']")
+    public WebElement lotDay;
+    @FindBy (xpath="//select[@name='month[]']")
+    public WebElement lotMonth;
+    @FindBy (xpath="//select[@name='year[]']")
+    public WebElement lotYear;
     @FindBy (id="update_purchase_order")
     public WebElement confirmPurchaseBtn;
     @FindBy (id="saveAsDraft")
@@ -75,10 +85,9 @@ public class PurchaseOrderPage {
             int lotIndex
     ) {
         if (barcode.isEmpty()){
-
             productDDLContainer.click();
             staticWait(800);
-            selectDDL(productDDL, "ex", 1);
+            selectDDL(productDDL, "new uom", 1);
         }else {
             staticWait(200);
             barcodeInput.sendKeys(barcode, Keys.ENTER);
@@ -93,14 +102,20 @@ public class PurchaseOrderPage {
         else
             selectDDL(discountTypeDDL, discountTypeValue, 0);
         itemDiscountInput.sendKeys(itemDiscount);
+
         try {
+            waitUntilElementClickable(lotIcon);
             lotIcon.click();
             waitUntilElementClickable(lotDDL);
             lotDDL.click();
-            selectDDL(lotDDL, "", lotIndex);
+            try {
+                selectDDL(lotDDL, "", lotIndex);
+            }catch (Exception ex){
+                createNewLot();
+            }
             lotConfirmBtn.click();
         } catch (Exception e){
-            System.out.printf("❌ No lot available for this product. ");
+            System.out.print("❌ No lot available for this product. ");
         }
     }
 
@@ -112,5 +127,16 @@ public class PurchaseOrderPage {
         if (id>= locator.size())
             id=id-1;
         locator.get(id).click();
+    }
+
+    public void createNewLot(){
+        createNewLotLabel.click();
+        try {
+            lotNumber.sendKeys("541318");
+
+        } catch (Exception ignored) {}
+        selectDDL(lotDay, "15", 0);
+        selectDDL(lotMonth, "08", 0);
+        selectDDL(lotYear, "2027", 0);
     }
 }
