@@ -76,6 +76,7 @@ public class PurchaseOrderPage {
     public void fillPurchaseOrderForm(
             String barcode,
             WebElement productDDL,
+            String productName,
             String quantity,
             String bonusQuantity,
             WebElement discountTypeDDL,
@@ -87,7 +88,7 @@ public class PurchaseOrderPage {
         if (barcode.isEmpty()){
             productDDLContainer.click();
             staticWait(800);
-            selectDDL(productDDL, "new uom", 1);
+            selectDDL(productDDL, productName, 1);
         }else {
             staticWait(200);
             barcodeInput.sendKeys(barcode, Keys.ENTER);

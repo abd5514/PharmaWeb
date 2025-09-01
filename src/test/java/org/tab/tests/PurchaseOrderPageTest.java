@@ -30,7 +30,7 @@ public class PurchaseOrderPageTest extends Base {
         purchaseOrderPage.ulList(purchaseOrderPage.supplierDDLOptions);
         purchaseOrderPage.discountInput.clear();
         purchaseOrderPage.discountInput.sendKeys("5");
-        purchaseOrderPage.fillPurchaseOrderForm("", purchaseOrderPage.productDDL, "2",
+        purchaseOrderPage.fillPurchaseOrderForm("", purchaseOrderPage.productDDL,"new uom", "2",
                 "1",
                 purchaseOrderPage.discountTypeDDL, "normal",
                 "10", purchaseOrderPage.lotDDL, 1);
