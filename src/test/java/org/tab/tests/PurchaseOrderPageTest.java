@@ -60,13 +60,14 @@ public class PurchaseOrderPageTest extends Base {
         driver.get(PropReader.get("imagetesturl", "https://example.org"));
         // 1) Create once (e.g., in @BeforeClass)
 // Put your images under: src/test/resources/images
-        staticWait(20000);
+        staticWait(200);
         ImageUploader uploader = new ImageUploader();
 
 // 2) Use on your page where the file input exists
-        By fileInput = By.cssSelector("input[type='file'][name='productImage']"); // adjust locator
-        uploader.uploadImage(driver, fileInput, "logo.png");   // with extension
-        uploader.uploadImage(driver, fileInput, "logo");       // without extension (tries .png/.jpg/..)
-
+        jsScrollDown(350);
+        By fileInput = By.xpath("//input[@name='userfile']"); // adjust locator
+//        uploader.uploadImage(driver, fileInput, "logo.png");   // with extension
+        uploader.uploadImage(driver, fileInput, "coffe");       // without extension (tries .png/.jpg/..)
+        staticWait(30000);
     }
 }

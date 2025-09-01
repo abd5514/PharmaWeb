@@ -65,10 +65,16 @@ public class SharedMethods {
         js.executeScript("window.scrollBy(0,-250)", Locator);
     }
 
-    public void jsScrollDown(WebElement Locator)
+    public static void jsScrollDown(WebElement Locator)
     {
         JavascriptExecutor js = (JavascriptExecutor) getDriver ();
         js.executeScript("window.scrollBy(0,350)", Locator);
+    }
+
+    public static void jsScrollDown(int pixel)
+    {
+        JavascriptExecutor js = (JavascriptExecutor) getDriver ();
+        js.executeScript("window.scrollBy(0,"+pixel+")");
     }
 
     public static void mouseClickAction(WebElement Locator)
