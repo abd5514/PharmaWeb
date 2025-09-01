@@ -1,0 +1,10 @@
+{
+  "username": "aman allah",
+  "password": "Test@123",
+  "timeout": 30,
+  "isAdmin": true,
+  "user": {
+    "id": "U123",
+    "name": "5an"
+  }
+}
