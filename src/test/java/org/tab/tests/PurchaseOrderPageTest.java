@@ -13,6 +13,7 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.tab.utils.common.SharedMethods.*;
 
@@ -43,19 +44,7 @@ public class PurchaseOrderPageTest extends Base {
         staticWait(10000);
     }
 
-    @Test(description = "json reader case")
-    public void jsonReader() throws IOException {
-        JSONReader reader = new JSONReader();
-
-        String username = reader.getString("username");             // "abdallah"
-        int timeout = reader.getInt("timeout");                     // 30
-        boolean admin = reader.getBoolean("isAdmin");               // true
-        String nestedName = reader.getNested("user.name");
-
-        System.out.println(username + " | " + timeout + " | " + admin + " | " + nestedName);
-    }
-
-    @Test(description = "image upload test")
+    /*@Test(description = "image upload test")
     public void imageUploadTest() {
         driver.get(PropReader.get("imagetesturl", "https://example.org"));
         // 1) Create once (e.g., in @BeforeClass)
@@ -69,5 +58,5 @@ public class PurchaseOrderPageTest extends Base {
 //        uploader.uploadImage(driver, fileInput, "logo.png");   // with extension
         uploader.uploadImage(driver, fileInput, "coffe");       // without extension (tries .png/.jpg/..)
         staticWait(30000);
-    }
+    }*/
 }

@@ -3,6 +3,7 @@ package org.tab.utils.common;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -127,5 +128,14 @@ public class SharedMethods {
         return rand.nextInt(length);
     }
 
-
+    public static void moveMouseToElement(WebDriver driver, WebElement element) {
+        try {
+            Actions actions = new Actions(driver);
+            actions.moveToElement(element)
+                    .pause(java.time.Duration.ofMillis(300)) // optional hover pause
+                    .perform();
+        } catch (Exception e) {
+            System.out.println("❌ Failed to move mouse to element: " + e.getMessage());
+        }
+    }
 }
