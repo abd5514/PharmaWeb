@@ -3,4 +3,7 @@
     <username>abdallah.ahmad@tabsense.ai</username>
     <password>Test@1234</password>
     <url>https://stg-pharmacypos.tabsense.ai/pharmacynewcheck/dashboard?pharmacynewcheck</url>
+    <staffurl>https://menuiq.tabsense.ai/admin-panel-new/login</staffurl>
+    <staffusername>admin@admin.com</staffusername>
+    <staffpassword>cD1hhAPW8Fs},[%7</staffpassword>
 </testdata>

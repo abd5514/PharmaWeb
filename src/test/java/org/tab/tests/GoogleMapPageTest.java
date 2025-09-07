@@ -28,13 +28,25 @@ public class GoogleMapPageTest extends Base {
             String url = r.getString(i, "googleMapsUri");
             String storeName = r.getString(i, "displayName.text");
             driver.get(url);
-            staticWait(1000);
+            staticWait(400);
             try {
                 googleMapPage.menuBtn.click();
+                staticWait(200);
+
+                // If a new tab is opened, close it
+                if (driver.getWindowHandles().size() > 1) {
+                    for (String handle : driver.getWindowHandles()) {
+                        driver.switchTo().window(handle);
+                    }
+                    driver.close(); // closes the new tab (last opened)
+                    // Switch back to first tab
+                    driver.switchTo().window(driver.getWindowHandles().iterator().next());
+                }
             } catch (Exception e) {
                 continue;
             }
             googleMapPage.getAllImages(driver,storeName);
+            System.out.println("current loop  "+i);
         }
     }
 }
