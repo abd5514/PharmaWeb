@@ -27,8 +27,8 @@ public class StaffDashboardPage {
     public WebElement uploadInput;
     @FindBy (xpath="//button[@id='key-bindings-2']")
     public WebElement uploadBtn;
-    @FindBy (xpath="//button[@aria-label='User menu']")
-    public WebElement logoutMenu;
+    @FindBy (xpath="//h3[normalize-space()='Saved']")
+    public WebElement savedText;
 
 
     public StaffDashboardPage(WebDriver driver) {

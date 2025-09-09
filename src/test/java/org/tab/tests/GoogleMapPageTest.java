@@ -3,6 +3,7 @@ package org.tab.tests;
 import org.openqa.selenium.By;
 import org.tab.base.Base;
 import org.tab.data.JSONReader;
+import org.tab.data.RetryFailedDownloads;
 import org.tab.utils.ExtentReport.ExtentTestListener;
 import org.tab.web_pages.GoogleMapPage;
 import org.testng.annotations.Listeners;
@@ -48,5 +49,10 @@ public class GoogleMapPageTest extends Base {
             googleMapPage.getAllImages(driver,storeName);
             System.out.println("current loop  "+i);
         }
+    }
+
+    @Test(description = "redownload failed images")
+    public void reDownload() throws IOException {
+        RetryFailedDownloads.retryAll();
     }
 }

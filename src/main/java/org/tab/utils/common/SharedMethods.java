@@ -20,6 +20,22 @@ public class SharedMethods {
 
     WebDriver driver;
     public String winHandleBefore ;
+    // Windows-safe name sanitization for folders/files
+    private static final String WINDOWS_RESERVED = "(?i)^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$";
+
+    public static String sanitizeForWindows(String s) {
+        if (s == null || s.isBlank()) return "unknown";
+        String cleaned = s
+                .replaceAll("[\\\\/:*?\"<>|]", "_")   // illegal characters
+                .replaceAll("[\\p{Cntrl}]", "_")      // control chars
+                .trim();
+        // remove trailing dots/spaces (Windows forbids them at end)
+        cleaned = cleaned.replaceAll("[\\.\\s]+$", "");
+        // avoid reserved device names
+        if (cleaned.matches(WINDOWS_RESERVED)) cleaned = "_" + cleaned;
+        return cleaned;
+    }
+
 
     public SharedMethods(WebDriver driver) {
         this.driver = driver;
