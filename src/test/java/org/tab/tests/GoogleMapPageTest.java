@@ -46,7 +46,7 @@ public class GoogleMapPageTest extends Base {
             } catch (Exception e) {
                 continue;
             }
-            googleMapPage.getAllImages(driver,storeName);
+            googleMapPage.getAllImages(driver,storeName,i);
             System.out.println("current loop  "+i);
         }
     }

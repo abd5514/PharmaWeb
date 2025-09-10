@@ -21,20 +21,21 @@ public class StaffDashboardPageTest extends Base {
     public void menuUploader() {
         ImageUploader imageUploader = new ImageUploader();
         List<String> storeFolders = imageUploader.getImageFolderNames();
-        for(int i=0;i<=storeFolders.size();i++){
+        driver.get(getXMLData("staffurl"));
+        StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
+        staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
+        staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
+        staffDashboardPage.loginBtn.click();
+        for(int i=80;i<=storeFolders.size();i++){
+            String storeXpath = "//span[normalize-space()='"+storeFolders.get(i)+"']";
             try {
-                driver.get(getXMLData("staffurl"));
-                StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
-                staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
-                staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
-                staffDashboardPage.loginBtn.click();
                 waitUntilElementClickable(staffDashboardPage.sideMenuStores);
                 staffDashboardPage.sideMenuStores.click();
                 waitUntilElementVisible(staffDashboardPage.searchTenantInput);
                 staffDashboardPage.searchTenantInput.sendKeys(storeFolders.get(i), Keys.ENTER);
                 waitUntilElementClickable(staffDashboardPage.moreBtn);
-                staticWait(300);
-                driver.findElement(By.xpath("//span[normalize-space()='"+storeFolders.get(i)+"']")).click();
+                staticWait(1800);
+                driver.findElement(By.xpath(storeXpath)).click();
                 pageBottom();
                 List<String> images = imageUploader.getImagePathsInFolder(storeFolders.get(i));
                 staticWait(1000);
@@ -49,13 +50,14 @@ public class StaffDashboardPageTest extends Base {
                     continue;
                 }
                 staffDashboardPage.uploadBtn.click();
-                staticWait(5000);
-                driver.manage().deleteAllCookies();
+                staticWait(2000);
+                System.out.println("current loop  " + i + " store   " + storeFolders.get(i) + " uploaded");
+//                driver.manage().deleteAllCookies();
+                staticWait(700);
             } catch (Exception e) {
-
-                System.out.println("fg3 3a store   " + storeFolders.get(i) + " skipped   " +i);
-                driver.manage().deleteAllCookies();
+                System.out.println("current loop  " + i + " store   " + storeFolders.get(i) + " skipped    " + e.getMessage());
             }
+//            driver.navigate().refresh();
         }
     }
 }
