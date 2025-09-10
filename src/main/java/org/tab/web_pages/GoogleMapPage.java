@@ -9,6 +9,7 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.Select;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -33,7 +34,7 @@ public class GoogleMapPage {
         PageFactory.initElements(driver, this);
     }
 
-    public void getAllImages(WebDriver driver, String imageName) {
+    public void getAllImages(WebDriver driver, String imageName, int loopId) {
         for (int i = 0; i < 15; i++) {
             try {
                 moveMouseToElement(driver, imageContainer);
@@ -67,14 +68,15 @@ public class GoogleMapPage {
 
                 if (src != null && src.contains("lh3.googleusercontent.com")) {
                     // Replace size params with w4000-h5500
-                    String highResSrc = src.replaceAll("w\\d+-h\\d+", "w4000-h5500");
+                    String highResSrc = src.replaceAll("w\\d+", "w6000");
+                    highResSrc = highResSrc.replaceAll("-h\\d+", "");
                     // Save image in src/test/resources/images/<storeName>
                     String fileName = sanitizeForWindows("image_" + safeName + "_" + index + ".png");
                     File target = new File(dir, fileName);
                     try {
                         downloadImage(highResSrc, target.getPath());
                     } catch (Exception e) {
-                        saveFailedDownload(highResSrc, target.getPath(), e);
+                        saveFailedDownload(highResSrc, target.getPath(), e, loopId);
                     }
                     index++;
                 }
@@ -86,18 +88,80 @@ public class GoogleMapPage {
         }
     }
 
-    private void downloadImage(String imageUrl, String filePath) {
-        try (InputStream in = new URL(imageUrl).openStream();
-             FileOutputStream out = new FileOutputStream(new File(filePath))) {
+    private void downloadImage(String imageUrl, String filePath) throws IOException {
+        File target = new File(filePath);
+        File parent = target.getParentFile();
+        if (parent != null && !parent.exists()) parent.mkdirs();
 
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+        IOException firstFailure = null;
+
+        // ── Strategy 1: Legacy approach ─────────────────────────
+        try (InputStream in = new URL(imageUrl).openStream();
+             FileOutputStream out = new FileOutputStream(target, false)) {
+            byte[] buf = new byte[8192];
+            int r; long total = 0;
+            while ((r = in.read(buf)) != -1) {
+                out.write(buf, 0, r);
+                total += r;
             }
-        } catch (IOException e) {
-            System.out.println("❌ Failed to download image: " + imageUrl);
-            e.printStackTrace();
+            if (total == 0) throw new IOException("Zero bytes downloaded (legacy).");
+            return; // success → stops here, no duplicate
+        } catch (IOException ex) {
+            firstFailure = ex;
+            // Cleanup ANY partial (zero or non-zero) so Strategy 2 starts clean
+            try { if (target.exists()) target.delete(); } catch (Exception ignore) {}
+        }
+
+        // ── Strategy 2: Robust HTTP with status & timeouts ──────
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL(imageUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(30000);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+
+            int code = conn.getResponseCode();
+
+            // Handle 3xx redirect manually once
+            if (code >= 300 && code < 400) {
+                String loc = conn.getHeaderField("Location");
+                if (loc != null && !loc.isEmpty()) {
+                    conn.disconnect();
+                    URL redir = new URL(url, loc);
+                    conn = (HttpURLConnection) redir.openConnection();
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(30000);
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+                    code = conn.getResponseCode();
+                }
+            }
+
+            if (code < 200 || code >= 300) {
+                throw new IOException("HTTP " + code + " for " + imageUrl);
+            }
+
+            try (InputStream in = conn.getInputStream();
+                 FileOutputStream out = new FileOutputStream(target, false)) {
+                byte[] buf = new byte[8192];
+                int r; long total = 0;
+                while ((r = in.read(buf)) != -1) {
+                    out.write(buf, 0, r);
+                    total += r;
+                }
+                if (total == 0) throw new IOException("Zero bytes downloaded (HTTP).");
+            }
+            return; // success
+        } catch (IOException ex2) {
+            // Cleanup any partial from Strategy 2 as well
+            try { if (target.exists()) target.delete(); } catch (Exception ignore) {}
+            IOException combined = new IOException("Failed to download after legacy+HTTP attempts: " + imageUrl);
+            if (firstFailure != null) combined.addSuppressed(firstFailure);
+            combined.addSuppressed(ex2);
+            throw combined;
+        } finally {
+            if (conn != null) conn.disconnect();
         }
     }
 
@@ -137,7 +201,7 @@ public class GoogleMapPage {
         }
     }*/
 
-    private void saveFailedDownload(String imageUrl, String filePath, Exception e) {
+    private void saveFailedDownload(String imageUrl, String filePath, Exception e, int loopId) {
         File logFile = new File("src/test/resources/failed_downloads.csv");
         try {
             // Ensure parent directory exists
@@ -162,7 +226,7 @@ public class GoogleMapPage {
 
                     // Always quote to be safe with commas
                     pw.printf("\"%s\",\"%s\",\"%s\",\"%s\"%n",
-                            timestamp, imageUrl, filePath, errorMsg);
+                            loopId, timestamp, imageUrl, filePath, errorMsg);
                 }
             }
         } catch (IOException io) {

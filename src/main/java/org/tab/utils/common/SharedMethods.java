@@ -26,8 +26,8 @@ public class SharedMethods {
     public static String sanitizeForWindows(String s) {
         if (s == null || s.isBlank()) return "unknown";
         String cleaned = s
-                .replaceAll("[\\\\/:*?\"<>|]", "_")   // illegal characters
-                .replaceAll("[\\p{Cntrl}]", "_")      // control chars
+                .replaceAll("[\\\\/:*?\"<>|]", "")   // illegal characters
+                .replaceAll("[\\p{Cntrl}]", "")      // control chars
                 .trim();
         // remove trailing dots/spaces (Windows forbids them at end)
         cleaned = cleaned.replaceAll("[\\.\\s]+$", "");
