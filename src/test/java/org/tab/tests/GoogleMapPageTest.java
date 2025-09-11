@@ -53,6 +53,6 @@ public class GoogleMapPageTest extends Base {
 
     @Test(description = "redownload failed images")
     public void reDownload() throws IOException {
-        RetryFailedDownloads.retryAll();
+        RetryFailedDownloads.retryAllFast();
     }
 }
