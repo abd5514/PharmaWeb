@@ -25,9 +25,10 @@ public class GoogleMapPageTest extends Base {
         driver.get(uri);
         googleMapPage.enBtn.click();
         staticWait(1000);
-        for (int i = 0; i < count; i++) {
-            String url = r.getString(i, "googleMapsUri");
-            String storeName = r.getString(i, "displayName.text");
+        for (int i = 850; i < count; i++) {
+            var item = r.getNode(i, "");
+            String url = item.path("googleMapsUri").asText();
+            String storeName = item.path("displayName").path("text").asText();
             driver.get(url);
             staticWait(400);
             try {
@@ -44,6 +45,8 @@ public class GoogleMapPageTest extends Base {
                     driver.switchTo().window(driver.getWindowHandles().iterator().next());
                 }
             } catch (Exception e) {
+                googleMapPage.saveFailedDownload("no menu tab found", storeName, e, i);
+                System.out.println("current loop  "+i);
                 continue;
             }
             googleMapPage.getAllImages(driver,storeName,i);

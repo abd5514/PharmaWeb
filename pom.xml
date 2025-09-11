@@ -72,6 +72,41 @@
           <artifactId>jackson-databind</artifactId>
           <version>2.17.2</version>
       </dependency>
+      <!-- Drive v3 API (modern) -->
+      <dependency>
+          <groupId>com.google.apis</groupId>
+          <artifactId>google-api-services-drive</artifactId>
+          <version>v3-rev20250829-2.0.0</version>
+      </dependency>
+
+      <!-- Google API Client (works with the above) -->
+      <dependency>
+          <groupId>com.google.api-client</groupId>
+          <artifactId>google-api-client</artifactId>
+          <version>2.6.0</version>
+      </dependency>
+
+      <!-- Auth library used for ServiceAccountCredentials -->
+      <dependency>
+          <groupId>com.google.auth</groupId>
+          <artifactId>google-auth-library-oauth2-http</artifactId>
+          <version>1.28.0</version>
+      </dependency>
+
+      <!-- OPTIONAL: Only if you actually use the OAuth flow in your code.
+           If you ONLY use service accounts, REMOVE this to avoid old transitive pulls. -->
+      <dependency>
+          <groupId>com.google.oauth-client</groupId>
+          <artifactId>google-oauth-client-jetty</artifactId>
+          <version>1.36.0</version>
+          <!-- Safety: keep it from pulling any legacy api-client, typically it doesn't, but just in case -->
+          <exclusions>
+              <exclusion>
+                  <groupId>com.google.api-client</groupId>
+                  <artifactId>google-api-client</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
   </dependencies>
 
   <build>

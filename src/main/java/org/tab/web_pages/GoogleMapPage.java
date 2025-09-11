@@ -35,12 +35,15 @@ public class GoogleMapPage {
     }
 
     public void getAllImages(WebDriver driver, String imageName, int loopId) {
-        for (int i = 0; i < 15; i++) {
+        String safeName = sanitizeForWindows(imageName);
+        for (int i = 0; i <3 ; i++) {
             try {
                 moveMouseToElement(driver, imageContainer);
                 if (nextBtn.isDisplayed()) {
-                    nextBtn.click();
-                    moveMouseToElement(driver, menuBtn);
+                    for(int j=0;j<30;j++){
+                        nextBtn.click();
+                        staticWait(5);
+                    }
                 } else break;
             } catch (Exception ignored) {}
         }
@@ -50,7 +53,7 @@ public class GoogleMapPage {
             );
             // Prepare store folder: src/test/resources/images/<storeName>
             // Auto-clean (delete old files) before saving new ones
-            String safeName = sanitizeForWindows(imageName);
+
             File dir = new File("src/test/resources/images/" + safeName);
             if (dir.exists()) {
                 try {
@@ -63,14 +66,15 @@ public class GoogleMapPage {
             }
 
             int index = 1; // for naming files
+            if(images.isEmpty())
+                saveFailedDownload("no images found under menu tab", imageName, null, loopId);
             for (WebElement img : images) {
                 String src = img.getAttribute("src");
 
                 if (src != null && src.contains("lh3.googleusercontent.com")) {
-                    // Replace size params with w4000-h5500
-                    String highResSrc = src.replaceAll("w\\d+", "w6000");
-                    highResSrc = highResSrc.replaceAll("-h\\d+", "");
-                    // Save image in src/test/resources/images/<storeName>
+                    // Replace size params with w1000-h1000
+                    String highResSrc = src.replaceAll("w\\d+-h\\d+-p", "w6000");
+                    // Save image in src/test/resources/images
                     String fileName = sanitizeForWindows("image_" + safeName + "_" + index + ".png");
                     File target = new File(dir, fileName);
                     try {
@@ -79,10 +83,12 @@ public class GoogleMapPage {
                         saveFailedDownload(highResSrc, target.getPath(), e, loopId);
                     }
                     index++;
-                }
+                } else
+                    saveFailedDownload("no images found under menu tab", imageName, null, loopId);
             }
         } catch (NoSuchElementException e) {
             System.out.println("No images found in the specified container.");
+            saveFailedDownload("no images found under menu tab", imageName, e, loopId);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -97,19 +103,17 @@ public class GoogleMapPage {
 
         // ── Strategy 1: Legacy approach ─────────────────────────
         try (InputStream in = new URL(imageUrl).openStream();
-             FileOutputStream out = new FileOutputStream(target, false)) {
-            byte[] buf = new byte[8192];
-            int r; long total = 0;
-            while ((r = in.read(buf)) != -1) {
-                out.write(buf, 0, r);
-                total += r;
+             FileOutputStream out = new FileOutputStream(new File(filePath))) {
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
             }
-            if (total == 0) throw new IOException("Zero bytes downloaded (legacy).");
-            return; // success → stops here, no duplicate
-        } catch (IOException ex) {
-            firstFailure = ex;
-            // Cleanup ANY partial (zero or non-zero) so Strategy 2 starts clean
-            try { if (target.exists()) target.delete(); } catch (Exception ignore) {}
+        } catch (IOException e) {
+            System.out.println("❌ Failed to download image: " + imageUrl);
+            e.printStackTrace();
+            return;
         }
 
         // ── Strategy 2: Robust HTTP with status & timeouts ──────
@@ -143,8 +147,8 @@ public class GoogleMapPage {
             }
 
             try (InputStream in = conn.getInputStream();
-                 FileOutputStream out = new FileOutputStream(target, false)) {
-                byte[] buf = new byte[8192];
+                 FileOutputStream out = new FileOutputStream(target)) {
+                byte[] buf = new byte[1024];
                 int r; long total = 0;
                 while ((r = in.read(buf)) != -1) {
                     out.write(buf, 0, r);
@@ -155,7 +159,7 @@ public class GoogleMapPage {
             return; // success
         } catch (IOException ex2) {
             // Cleanup any partial from Strategy 2 as well
-            try { if (target.exists()) target.delete(); } catch (Exception ignore) {}
+//            try { if (target.exists()) target.delete(); } catch (Exception ignore) {}
             IOException combined = new IOException("Failed to download after legacy+HTTP attempts: " + imageUrl);
             if (firstFailure != null) combined.addSuppressed(firstFailure);
             combined.addSuppressed(ex2);
@@ -178,30 +182,7 @@ public class GoogleMapPage {
         }
     }
 
-    // NEW: helper to persist failures without changing existing flow
-    /*private void saveFailedDownload(String imageUrl, String filePath, Exception e) {
-        File logFile = new File("src/test/resources/failed_downloads.csv");
-        try {
-            // Ensure parent directory exists
-            File parent = logFile.getParentFile();
-            if (parent != null && !parent.exists()) {
-                parent.mkdirs();
-            }
-
-            // true = append mode (creates file if not exists, appends if it does)
-            try (PrintWriter pw = new PrintWriter(new FileWriter(logFile, true))) {
-                String timestamp = LocalDateTime.now().toString();
-                String errorMsg = (e == null || e.getMessage() == null) ? "" :
-                        e.getMessage().replaceAll("[\\r\\n]", " ");
-                pw.printf("\"%s\",\"%s\",\"%s\",\"%s\"%n", timestamp, imageUrl, filePath, errorMsg);
-            }
-        } catch (IOException io) {
-            // Swallow so we don’t interrupt main flow
-            System.out.println("⚠️ Failed to log download error: " + io.getMessage());
-        }
-    }*/
-
-    private void saveFailedDownload(String imageUrl, String filePath, Exception e, int loopId) {
+    public void saveFailedDownload(String imageUrl, String filePath, Exception e, int loopId) {
         File logFile = new File("src/test/resources/failed_downloads.csv");
         try {
             // Ensure parent directory exists
