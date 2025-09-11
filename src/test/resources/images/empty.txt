@@ -1,5 +1,5 @@
 mvn -q test `
-"-Dtest=GoogleMapPageTest#jsonReader_parallel" `                                                                                                         
--Dworkers=8 `                                                                                                                                            
--DperPlaceDownloads=6 `                                                                                                                                  
-"-DJSONFilePath=src/test/resources/Jeddah-details_json_chunk_2.json"
+  "-Dtest=FastGoogleMapPageTest#jsonReader_parallel" `
+  -Dworkers=6 `
+  -DperPlaceDownloads=4 `
+  "-DJSONFilePath=src/test/resources/Makkah-details_json_chunk_1.json"
