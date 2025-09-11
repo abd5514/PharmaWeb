@@ -1,0 +1,5 @@
+mvn -q test `
+"-Dtest=GoogleMapPageTest#jsonReader_parallel" `                                                                                                         
+-Dworkers=8 `                                                                                                                                            
+-DperPlaceDownloads=6 `                                                                                                                                  
+"-DJSONFilePath=src/test/resources/Jeddah-details_json_chunk_2.json"

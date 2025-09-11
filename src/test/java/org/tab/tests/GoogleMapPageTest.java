@@ -25,7 +25,7 @@ public class GoogleMapPageTest extends Base {
         driver.get(uri);
         googleMapPage.enBtn.click();
         staticWait(1000);
-        for (int i = 850; i < count; i++) {
+        for (int i = 0; i < count; i++) {
             var item = r.getNode(i, "");
             String url = item.path("googleMapsUri").asText();
             String storeName = item.path("displayName").path("text").asText();

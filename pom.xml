@@ -1,139 +1,133 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
+<project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.em</groupId>
-  <artifactId>Web</artifactId>
-  <version>1.0.0</version>
-  <name>selenium-framework-modern</name>
-  <properties>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <selenium.version>4.35.0</selenium.version>
-    <testng.version>7.11.0</testng.version>
-    <surefire.version>3.2.5</surefire.version>
-  </properties>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.em</groupId>
+    <artifactId>Web</artifactId>
+    <version>1.0.0</version>
+    <name>selenium-framework-modern</name>
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <selenium.version>4.35.0</selenium.version>
+        <testng.version>7.11.0</testng.version>
+        <surefire.version>3.2.5</surefire.version>
+    </properties>
 
-  <dependencies>
-    
-    <!-- ExtentReports -->
-    <dependency>
-      <groupId>com.aventstack</groupId>
-      <artifactId>extentreports</artifactId>
-      <version>5.1.1</version>
-    </dependency>
-<!-- Selenium: all-in-one meta artifact (includes client + drivers) -->
-    <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-java</artifactId>
-      <version>${selenium.version}</version>
-    </dependency>
+    <dependencies>
 
-      <dependency>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-          <version>3.12.0</version>
-      </dependency>
+        <!-- ExtentReports -->
+        <dependency>
+            <groupId>com.aventstack</groupId>
+            <artifactId>extentreports</artifactId>
+            <version>5.1.1</version>
+        </dependency>
+        <!-- Selenium: all-in-one meta artifact (includes client + drivers) -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
 
-    <!-- TestNG -->
-    <!--<dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-      <version>${testng.version}</version>
-      <scope>test</scope>
-    </dependency>-->
-      <dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+
+        <!-- TestNG -->
+        <!--<dependency>
           <groupId>org.testng</groupId>
           <artifactId>testng</artifactId>
-          <version>7.11.0</version>
-      </dependency>
+          <version>${testng.version}</version>
+          <scope>test</scope>
+        </dependency>-->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>7.11.0</version>
+        </dependency>
+        <!-- Jackson core + databind -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.2</version>
+        </dependency>
 
-    <!-- Jackson (for simple JSON utilities if needed later) -->
-    <!--<dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.17.2</version>
-      <scope>test</scope>
-    </dependency>-->
-      <dependency>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-          <version>2.17.2</version>
-      </dependency>
+        <!-- Afterburner for speed -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-afterburner</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+        <!-- Drive v3 API (modern) -->
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-drive</artifactId>
+            <version>v3-rev20250829-2.0.0</version>
+        </dependency>
 
-      <dependency>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-          <version>2.17.2</version>
-      </dependency>
-      <dependency>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-          <version>2.17.2</version>
-      </dependency>
-      <!-- Drive v3 API (modern) -->
-      <dependency>
-          <groupId>com.google.apis</groupId>
-          <artifactId>google-api-services-drive</artifactId>
-          <version>v3-rev20250829-2.0.0</version>
-      </dependency>
+        <!-- Google API Client (works with the above) -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>2.6.0</version>
+        </dependency>
 
-      <!-- Google API Client (works with the above) -->
-      <dependency>
-          <groupId>com.google.api-client</groupId>
-          <artifactId>google-api-client</artifactId>
-          <version>2.6.0</version>
-      </dependency>
+        <!-- Auth library used for ServiceAccountCredentials -->
+        <dependency>
+            <groupId>com.google.auth</groupId>
+            <artifactId>google-auth-library-oauth2-http</artifactId>
+            <version>1.28.0</version>
+        </dependency>
 
-      <!-- Auth library used for ServiceAccountCredentials -->
-      <dependency>
-          <groupId>com.google.auth</groupId>
-          <artifactId>google-auth-library-oauth2-http</artifactId>
-          <version>1.28.0</version>
-      </dependency>
+        <!-- OPTIONAL: Only if you actually use the OAuth flow in your code.
+             If you ONLY use service accounts, REMOVE this to avoid old transitive pulls. -->
+        <dependency>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client-jetty</artifactId>
+            <version>1.36.0</version>
+            <!-- Safety: keep it from pulling any legacy api-client, typically it doesn't, but just in case -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.api-client</groupId>
+                    <artifactId>google-api-client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
 
-      <!-- OPTIONAL: Only if you actually use the OAuth flow in your code.
-           If you ONLY use service accounts, REMOVE this to avoid old transitive pulls. -->
-      <dependency>
-          <groupId>com.google.oauth-client</groupId>
-          <artifactId>google-oauth-client-jetty</artifactId>
-          <version>1.36.0</version>
-          <!-- Safety: keep it from pulling any legacy api-client, typically it doesn't, but just in case -->
-          <exclusions>
-              <exclusion>
-                  <groupId>com.google.api-client</groupId>
-                  <artifactId>google-api-client</artifactId>
-              </exclusion>
-          </exclusions>
-      </dependency>
-  </dependencies>
-
-  <build>
-      <resources>
-          <resource>
-              <directory>src/main/resources</directory>
-              <filtering>false</filtering>
-          </resource>
-      </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
-        <configuration>
-          <suiteXmlFiles>
-            <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
-          </suiteXmlFiles>
-          <systemPropertyVariables>
-            <browser>${browser}</browser>
-            <headless>${headless}</headless>
-            <remote>${remote}</remote>
-            <remoteUrl>${remoteUrl}</remoteUrl>
-            <baseUrl>${baseUrl}</baseUrl>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <systemPropertyVariables>
+                        <browser>${browser}</browser>
+                        <headless>${headless}</headless>
+                        <remote>${remote}</remote>
+                        <remoteUrl>${remoteUrl}</remoteUrl>
+                        <baseUrl>${baseUrl}</baseUrl>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -40,7 +40,7 @@ public class GoogleMapPage {
             try {
                 moveMouseToElement(driver, imageContainer);
                 if (nextBtn.isDisplayed()) {
-                    for(int j=0;j<30;j++){
+                    for(int j=0;j<40;j++){
                         nextBtn.click();
                         staticWait(5);
                     }
