@@ -80,7 +80,7 @@ public class FastJSONReader {
 
     private static JsonNode navigate(JsonNode start, String path) {
         if (path == null || path.isEmpty()) return start;
-        List<PathStep> steps = PATH_CACHE.computeIfAbsent(path, JSONReader::compilePath);
+        List<PathStep> steps = PATH_CACHE.computeIfAbsent(path, FastJSONReader::compilePath);
         JsonNode current = start;
         for (PathStep step : steps) {
             if (current == null || current.isMissingNode()) return current;

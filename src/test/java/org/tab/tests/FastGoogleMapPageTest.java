@@ -4,8 +4,10 @@ import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.tab.data.FastJSONReader;
 import org.tab.data.JSONReader;
-import org.tab.data.JSONReader.Item;
+import org.tab.data.FastJSONReader.Item;
+import org.tab.web_pages.FastGoogleMapPage;
 import org.tab.web_pages.GoogleMapPage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -24,7 +26,7 @@ public class FastGoogleMapPageTest {
     @Test(description = "FAST parallel JSON reader + image downloader")
     public void jsonReader_parallel() throws IOException, InterruptedException {
         // Load items (googleMapsUri + displayName.text). File path comes from -DJSONFilePath or PropReader.
-        JSONReader r = new JSONReader();
+        FastJSONReader r = new FastJSONReader();
         List<Item> items = r.toItems();
 
         // Sanity check
@@ -32,7 +34,7 @@ public class FastGoogleMapPageTest {
 
         // Tunables
         int workers = Integer.parseInt(System.getProperty("workers", "6"));               // parallel WebDrivers
-        int perPlaceDownloads = Integer.parseInt(System.getProperty("perPlaceDownloads", "6")); // per-place parallel downloads
+        int perPlaceDownloads = Integer.parseInt(System.getProperty("perPlaceDownloads", "4")); // per-place parallel downloads
 
         System.out.printf("Items=%d, workers=%d, perPlaceDownloads=%d%n", items.size(), workers, perPlaceDownloads);
 
@@ -52,11 +54,11 @@ public class FastGoogleMapPageTest {
                     // Try to switch to English once (if the link exists)
                     try {
                         driver.get("https://www.google.com");
-                        GoogleMapPage pageTmp = new GoogleMapPage(driver);
+                        FastGoogleMapPage pageTmp = new FastGoogleMapPage(driver);
                         try { pageTmp.enBtn.click(); } catch (Exception ignored) {}
                     } catch (Exception ignored) {}
 
-                    GoogleMapPage page = new GoogleMapPage(driver);
+                    FastGoogleMapPage page = new FastGoogleMapPage(driver);
 
                     while (true) {
                         Item it = queue.poll(200, TimeUnit.MILLISECONDS);
@@ -64,7 +66,7 @@ public class FastGoogleMapPageTest {
                         try {
                             page.processPlace(driver, it.url, it.name, it.index, perPlaceDownloads);
                         } catch (Throwable ex) {
-                            GoogleMapPage.saveFailedDownload("worker-failed", it.name, new RuntimeException(ex), it.index);
+                            FastGoogleMapPage.saveFailedDownload("worker-failed", it.name, new RuntimeException(ex), it.index);
                         }
                     }
                 } catch (Throwable boot) {
