@@ -72,7 +72,11 @@
             <artifactId>google-api-services-drive</artifactId>
             <version>v3-rev20250829-2.0.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>net.sourceforge.tess4j</groupId>
+            <artifactId>tess4j</artifactId>
+            <version>5.10.0</version>
+        </dependency>
         <!-- Google API Client (works with the above) -->
         <dependency>
             <groupId>com.google.api-client</groupId>

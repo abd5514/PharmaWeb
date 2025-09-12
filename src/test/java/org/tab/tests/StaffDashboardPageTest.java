@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 import java.util.List;
 
 import static org.tab.data.TestDataReader.getXMLData;
+import static org.tab.utils.ImageTextChecker.processRootOnce;
 import static org.tab.utils.common.SharedMethods.*;
 
 @Listeners(ExtentTestListener.class)
@@ -22,7 +23,6 @@ public class StaffDashboardPageTest extends Base {
     public void newMenuUploader() {
         ImageUploader imageUploader = new ImageUploader();
         List<String> storeFolders = imageUploader.getImageFolderNames();
-        driver.get(getXMLData("staffurl"));
         StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
         staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
         staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
@@ -55,5 +55,10 @@ public class StaffDashboardPageTest extends Base {
                 System.out.println("current loop  " + i + " store   " + storeFolders.get(i) + " skipped    " + e.getMessage());
             }
         }
+    }
+
+    @Test
+    public void checkimages(){
+        processRootOnce();
     }
 }
