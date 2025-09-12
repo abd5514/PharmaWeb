@@ -84,7 +84,7 @@ public class SharedMethods {
     public static void jsScrollUp(WebElement Locator)
     {
         JavascriptExecutor js = (JavascriptExecutor) getDriver ();
-        js.executeScript("window.scrollBy(0,-250)", Locator);
+        js.executeScript("window.scrollBy(0,-450)", Locator);
     }
 
     public static void jsScrollDown(WebElement Locator)

@@ -192,4 +192,21 @@ public class ImageUploader {
         }
         return imagePaths;
     }
+
+    // ImageUploader.java
+    public void uploadAllAtOnce(WebDriver driver, WebElement input, List<String> absPaths) {
+        if (absPaths == null || absPaths.isEmpty()) return;
+
+        // Ensure input is visible & enabled; then send newline-separated absolute paths
+        String joined = String.join("\n", absPaths);
+
+        // If your page uses a custom button, make sure to click it to reveal the real <input type="file">.
+        // Then call sendKeys on the *real input element*:
+        input.sendKeys(joined);
+
+        // OPTIONAL: wait until your UI shows "upload complete" (replace with your actual locator/condition)
+        // new WebDriverWait(driver, Duration.ofSeconds(120))
+        //      .until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".uploader-progress")));
+    }
+
 }

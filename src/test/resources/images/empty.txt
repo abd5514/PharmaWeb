@@ -2,4 +2,4 @@ mvn -q test `
   "-Dtest=FastGoogleMapPageTest#jsonReader_parallel" `
   -Dworkers=6 `
   -DperPlaceDownloads=4 `
-  "-DJSONFilePath=src/test/resources/Makkah-details_json_chunk_1.json"
+  "-DJSONFilePath=src/test/resources/Madinah-details_json_chunk_2.json"

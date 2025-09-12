@@ -2,6 +2,7 @@ package org.tab.tests;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebElement;
 import org.tab.base.Base;
 import org.tab.data.ImageUploader;
 import org.tab.utils.ExtentReport.ExtentTestListener;
@@ -17,8 +18,8 @@ import static org.tab.utils.common.SharedMethods.*;
 @Listeners(ExtentTestListener.class)
 public class StaffDashboardPageTest extends Base {
 
-    @Test(description = "menu image uploader")
-    public void menuUploader() {
+    @Test(description = "menu image uploader new")
+    public void newMenuUploader() {
         ImageUploader imageUploader = new ImageUploader();
         List<String> storeFolders = imageUploader.getImageFolderNames();
         driver.get(getXMLData("staffurl"));
@@ -26,15 +27,12 @@ public class StaffDashboardPageTest extends Base {
         staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
         staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
         staffDashboardPage.loginBtn.click();
-        for(int i=80;i<=storeFolders.size();i++){
+        for(int i=0;i<=storeFolders.size();i++){
             String storeXpath = "//span[normalize-space()='"+storeFolders.get(i)+"']";
+            String storeSearch= storeFolders.get(i).replace(" ","+");
+            String filterUrl= getXMLData("baseuploaderUrl") +"?tableFilters[city][value]="+getXMLData("currentcity")+"&tableSearch="+storeSearch;
             try {
-                waitUntilElementClickable(staffDashboardPage.sideMenuStores);
-                staffDashboardPage.sideMenuStores.click();
-                waitUntilElementVisible(staffDashboardPage.searchTenantInput);
-                staffDashboardPage.searchTenantInput.sendKeys(storeFolders.get(i), Keys.ENTER);
-                waitUntilElementClickable(staffDashboardPage.moreBtn);
-                staticWait(1800);
+                driver.get(filterUrl);
                 driver.findElement(By.xpath(storeXpath)).click();
                 pageBottom();
                 List<String> images = imageUploader.getImagePathsInFolder(storeFolders.get(i));
@@ -52,12 +50,10 @@ public class StaffDashboardPageTest extends Base {
                 staffDashboardPage.uploadBtn.click();
                 staticWait(2000);
                 System.out.println("current loop  " + i + " store   " + storeFolders.get(i) + " uploaded");
-//                driver.manage().deleteAllCookies();
                 staticWait(700);
             } catch (Exception e) {
                 System.out.println("current loop  " + i + " store   " + storeFolders.get(i) + " skipped    " + e.getMessage());
             }
-//            driver.navigate().refresh();
         }
     }
 }

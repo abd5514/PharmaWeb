@@ -7,9 +7,11 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.tab.data.FastJSONReader;
 import org.tab.data.JSONReader;
 import org.tab.data.FastJSONReader.Item;
+import org.tab.utils.ExtentReport.ExtentTestListener;
 import org.tab.web_pages.FastGoogleMapPage;
 import org.tab.web_pages.GoogleMapPage;
 import org.testng.Assert;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -21,6 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+@Listeners(ExtentTestListener.class)
 public class FastGoogleMapPageTest {
 
     @Test(description = "FAST parallel JSON reader + image downloader")

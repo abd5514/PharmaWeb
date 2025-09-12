@@ -1,10 +1,15 @@
 package org.tab.web_pages;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
 public class StaffDashboardPage {
@@ -27,14 +32,16 @@ public class StaffDashboardPage {
     public WebElement uploadInput;
     @FindBy (xpath="//button[@id='key-bindings-2']")
     public WebElement uploadBtn;
-    @FindBy (xpath="//h3[normalize-space()='Saved']")
-    public WebElement savedText;
+    @FindBy (xpath="//button[@title='Filter']")
+    public WebElement filterBtn;
+    @FindBy (xpath="//select[@id='tableFilters.city.value']")
+    public WebElement cityDropdown;
+    @FindBy (xpath="//h1[normalize-space()='Stores']")
+    public WebElement storesH1;
+
 
 
     public StaffDashboardPage(WebDriver driver) {
         PageFactory.initElements(driver, this);
     }
-
-
-
 }
