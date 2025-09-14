@@ -82,7 +82,7 @@ public class ImageMenuFilterParallel {
         return t;
     });
     private static final Object LOG_LOCK = new Object();
-    private static Path LOG_PATH;
+    private static final Path LOG_PATH = Paths.get("src/test/resources/logs/skipped_stores.csv");
     private static Path CURRENT_ROOT;
 
     public static void main(String[] args) {
