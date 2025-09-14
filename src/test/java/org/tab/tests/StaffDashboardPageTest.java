@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 import static org.tab.data.TestDataReader.getXMLData;
+import static org.tab.utils.CSVLogger.logSkipped;
 import static org.tab.utils.ImageMenuFilterParallel.processRootOnce;
 import static org.tab.utils.common.SharedMethods.*;
 
@@ -51,6 +52,7 @@ public class StaffDashboardPageTest extends Base {
         staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
         staffDashboardPage.loginBtn.click();
         waitUntilElementClickable(staffDashboardPage.sideMenuStores);
+        //last run 25
         for(int i=0;i<=storeFolders.size()-1;i++){
             String storeXpath = "//span[normalize-space()='"+storeFolders.get(i)+"']";
             String storeSearch= storeFolders.get(i).replace(" ","+");
@@ -74,12 +76,111 @@ public class StaffDashboardPageTest extends Base {
                 uploadCount++;
                 staticWait(100);
             } catch (Exception e) {
-                System.out.println("current loop  " + i + " store   " + storeFolders.get(i) + " skipped    ");
+                logSkipped(storeFolders.get(i),e);
                 skipCount++;
             }
         }
         System.out.println("Total stores uploaded  " + uploadCount + "  skipped  " + skipCount);
     }
+
+    @Test(description = "menu image uploader new")
+    public void newMenuUploader(int i) {
+        int skipCount = 0;
+        int uploadCount = 0;
+        ImageUploader imageUploader = new ImageUploader();
+        List<String> storeFolders = imageUploader.getImageFolderNames();
+        if (i < 0 || i >= storeFolders.size()) {
+            System.out.println("Index out of bounds: " + i);
+            return;
+        }
+        StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
+        staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
+        staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
+        staffDashboardPage.loginBtn.click();
+        waitUntilElementClickable(staffDashboardPage.sideMenuStores);
+
+        String storeFolder = storeFolders.get(i);
+        String storeXpath = "//span[normalize-space()='" + storeFolder + "']";
+        String storeSearch = storeFolder.replace(" ", "+");
+        String filterUrl = getXMLData("baseuploaderUrl") + "?tableFilters[city][value]=" + getXMLData("currentcity") + "&tableSearch=" + storeSearch;
+        try {
+            driver.get(filterUrl);
+            driver.findElement(By.xpath(storeXpath)).click();
+            pageBottom();
+            List<String> images = imageUploader.getImagePathsInFolder(storeFolder);
+            staticWait(500);
+            try {
+                imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
+                staticWait(200);
+                waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
+            } catch (Exception e) {
+                System.out.println("fg3 3a image   " + i);
+                return;
+            }
+            staffDashboardPage.uploadBtn.click();
+            System.out.println("current loop  " + i + " store   " + storeFolder + " uploaded");
+            uploadCount++;
+            staticWait(100);
+        } catch (Exception e) {
+            System.out.println("current loop  " + i + " store   " + storeFolder + " skipped    ");
+            skipCount++;
+        }
+        System.out.println("Total stores uploaded  " + uploadCount + "  skipped  " + skipCount);
+    }
+
+    /*@Test(description = "Run newMenuUploader in parallel (not recommended, for demo only)")
+    public void runNewMenuUploaderInParallel() throws InterruptedException {
+        int parallelRuns = 4; // Number of concurrent executions
+        ExecutorService pool = Executors.newFixedThreadPool(parallelRuns);
+        CountDownLatch latch = new CountDownLatch(parallelRuns);
+
+        for (int i = 0; i < parallelRuns; i++) {
+            pool.submit(() -> {
+                try {
+                    StaffDashboardPageTest testInstance = new StaffDashboardPageTest();
+                    testInstance.driver = newChrome(); // Ensure each instance has its own driver
+                    testInstance.newMenuUploader();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        pool.shutdown();
+        latch.await();
+        System.out.println("All parallel newMenuUploader runs finished.");
+    }*/
+
+    @Test (description = "Run newMenuUploader in parallel (per index)")
+    public void runNewMenuUploaderInParallelEnhanched() throws InterruptedException {
+        ImageUploader imageUploader = new ImageUploader();
+        List<String> storeFolders = imageUploader.getImageFolderNames();
+        int parallelRuns = storeFolders.size(); // or any number <= storeFolders.size()
+        ExecutorService pool = Executors.newFixedThreadPool(parallelRuns);
+        CountDownLatch latch = new CountDownLatch(parallelRuns);
+
+        for (int i = 0; i < parallelRuns; i++) {
+            final int idx = i;
+            pool.submit(() -> {
+                try {
+                    System.out.println("Thread " + Thread.currentThread().getId() + " starting run for index: " + idx);
+                    StaffDashboardPageTest testInstance = new StaffDashboardPageTest();
+                    testInstance.driver = newChrome();
+                    testInstance.newMenuUploader(idx);
+                    System.out.println("Thread " + Thread.currentThread().getId() + " finished run for index: " + idx);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        pool.shutdown();
+
+        latch.await();
+        System.out.println("All parallel newMenuUploader runs finished.");
+    }
+
+
 
     // --- THIS is the new parallel test method ---
     @Test(description = "Parallel menu image uploader (per store folder)")
