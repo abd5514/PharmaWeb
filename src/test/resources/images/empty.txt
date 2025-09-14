@@ -3,3 +3,16 @@ mvn -q test `
   -Dworkers=6 `
   -DperPlaceDownloads=4 `
   "-DJSONFilePath=src/test/resources/Madinah-details_json_chunk_2.json"
+
+  mvn -Docr.lang=ara+eng -Dtessdata.path="C:/Program Files/Tesseract-OCR/tessdata" -Dimages.root="src/test/resources/images" -Docr.threads=6 -Dmenu.minLines=6 -Dmenu.minWords=20 -Dmenu.minDigitGroups=3 -Dmenu.debug=true test
+
+  new:
+  mvn test `
+    "-Dtest=StaffDashboardPageTest#pruneNonMenus" `
+    "-Docr.lang=ara+eng" `
+    "-Dtessdata.path=C:\Program Files\Tesseract-OCR\tessdata" `
+    "-Dimages.root=src/test/resources/images" `
+    "-Docr.threads=6" `
+    "-Ddelete.log=src/test/resources/logs/menu-deletes.csv" `
+    "-Ddelete.logAppend=true" `
+    "-Ddelete.logFailed=true"
