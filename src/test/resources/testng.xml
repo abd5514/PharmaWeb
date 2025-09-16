@@ -6,6 +6,12 @@
     <test name="Smoke">
         <classes>
             <class name="org.tab.tests.LoginPageTest"/>
+            <class name="org.tab.tests.FastGoogleMapPageTest"/>
+            <class name="org.tab.tests.FastGoogleMapPageTest">
+                <methods>
+                    <include name="jsonReader_parallel"/>
+                </methods>
+            </class>
         </classes>
     </test>
 </suite>

@@ -13,7 +13,7 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.time.Duration;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,9 +27,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.concurrent.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -52,19 +49,32 @@ public class StaffDashboardPageTest extends Base {
         staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
         staffDashboardPage.loginBtn.click();
         waitUntilElementClickable(staffDashboardPage.sideMenuStores);
-        //last run 25
         for(int i=0;i<=storeFolders.size()-1;i++){
             String storeXpath = "//span[normalize-space()='"+storeFolders.get(i)+"']";
             String storeSearch= storeFolders.get(i).replace(" ","+");
+            //dmmam city
             String filterUrl= getXMLData("baseuploaderUrl") +"?tableFilters[city][value]="+getXMLData("currentcity")+"&tableSearch="+storeSearch;
             try {
                 driver.get(filterUrl);
-                driver.findElement(By.xpath(storeXpath)).click();
+                try {
+                    driver.findElement(By.xpath(storeXpath)).click();
+                } catch (org.openqa.selenium.NoSuchElementException ex) {
+                    String fallbackXpath = "(//span[contains(normalize-space(),'" + storeFolders.get(i) + "')])[4]";
+                    System.out.println("⚠️ Fallback to: " + fallbackXpath);
+                    driver.findElement(By.xpath(fallbackXpath)).click();
+                }
                 pageBottom();
                 List<String> images = imageUploader.getImagePathsInFolder(storeFolders.get(i));
+                int imagesCount = images.size();
                 staticWait(500);
                 try {
-                    imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
+                    if(images.size()>9){
+                        images = images.subList(0, 9);// limit to first 9 images
+                        imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
+                        logSkipped(storeFolders.get(i),null, imagesCount);
+                    }
+                    else
+                        imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
                     staticWait(200);
                     waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
                 } catch (Exception e) {
@@ -74,9 +84,9 @@ public class StaffDashboardPageTest extends Base {
                 staffDashboardPage.uploadBtn.click();
                 System.out.println("current loop  " + i + " store   " + storeFolders.get(i) + " uploaded");
                 uploadCount++;
-                staticWait(100);
+                staticWait(800);
             } catch (Exception e) {
-                logSkipped(storeFolders.get(i),e);
+                logSkipped(storeFolders.get(i),e,0);
                 skipCount++;
             }
         }

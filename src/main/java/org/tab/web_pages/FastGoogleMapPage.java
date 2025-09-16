@@ -210,18 +210,18 @@ public class FastGoogleMapPage {
             if (conn != null) conn.disconnect();
         }
     }
-
     /* ---------- Thread-safe CSV logger (appends) ---------- */
-
+    private static final String run_Id = String.valueOf(System.currentTimeMillis());
+    private static final File log_File = new File("src/test/resources/failed_downloads_" + run_Id + ".csv");
     public static synchronized void saveFailedDownload(String imageUrl, String filePath, Exception e, int loopId) {
-        File logFile = new File("src/test/resources/failed_downloads.csv");
+
         try {
-            File parent = logFile.getParentFile();
+            File parent = log_File.getParentFile();
             if (parent != null && !parent.exists()) parent.mkdirs();
 
-            boolean newFile = !logFile.exists() || logFile.length() == 0;
+            boolean newFile = !log_File.exists() || log_File.length() == 0;
 
-            try (FileOutputStream fos = new FileOutputStream(logFile, true)) {
+            try (FileOutputStream fos = new FileOutputStream(log_File, true)) {
                 if (newFile) fos.write(new byte[]{(byte)0xEF,(byte)0xBB,(byte)0xBF}); // BOM for Excel
                 try (OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
                      PrintWriter pw = new PrintWriter(osw)) {

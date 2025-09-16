@@ -2,7 +2,7 @@ mvn -q test `
   "-Dtest=FastGoogleMapPageTest#jsonReader_parallel" `
   -Dworkers=6 `
   -DperPlaceDownloads=4 `
-  "-DJSONFilePath=src/test/resources/Madinah-details_json_chunk_2.json"
+  "-DJSONFilePath=src/test/resources/Abha_details.json"
 
   mvn -Docr.lang=ara+eng -Dtessdata.path="C:/Program Files/Tesseract-OCR/tessdata" -Dimages.root="src/test/resources/images" -Docr.threads=6 -Dmenu.minLines=6 -Dmenu.minWords=20 -Dmenu.minDigitGroups=3 -Dmenu.debug=true test
 

@@ -2,6 +2,8 @@ package org.tab.utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class CSVLogger {
 
@@ -12,14 +14,33 @@ public class CSVLogger {
      * @param storeName store folder skipped
      * @param exception exception message
      */
-    public static synchronized void logSkipped(String storeName, Exception exception) {
-        try (FileWriter writer = new FileWriter(CSV_FILE, true)) {
+    public static synchronized void logSkipped(String storeName, Exception exception, int imageCount) {
+        File file = new File(CSV_FILE);
+
+        // Ensure parent directory exists
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+
+        boolean newFile = !file.exists();
+
+        try (OutputStreamWriter writer = new OutputStreamWriter(
+                new FileOutputStream(file, true),
+                StandardCharsets.UTF_8)) {
+
+            // Write BOM only if file is new
+            if (newFile) {
+                writer.write('\ufeff'); // UTF-8 BOM
+                writer.write("Store,ErrorMessage" + System.lineSeparator());
+            }
+
             String safeMessage = exception != null
                     ? exception.getMessage()
-                    .replace(",", ";")              // avoid breaking columns
-                    .replaceAll("[\\r\\n]+", " ")   // replace newlines with space
-                    : "";
-            writer.write(storeName + "," + safeMessage + "\n");
+                    .replace(",", ";")
+                    .replaceAll("[\\r\\n]+", " ")
+                    : "have more than 9 images ( " + imageCount + " )";
+            writer.write(storeName + "," + safeMessage + System.lineSeparator());
         } catch (IOException e) {
             System.err.println("⚠️ Failed to log skipped store: " + storeName);
             e.printStackTrace();
