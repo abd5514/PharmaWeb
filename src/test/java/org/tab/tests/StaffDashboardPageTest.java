@@ -68,13 +68,13 @@ public class StaffDashboardPageTest extends Base {
                 int imagesCount = images.size();
                 staticWait(500);
                 try {
-                    if(images.size()>9){
+                    /*if(images.size()>9){
                         images = images.subList(0, 9);// limit to first 9 images
                         imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
                         logSkipped(storeFolders.get(i),null, imagesCount);
                     }
-                    else
-                        imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
+                    else*/
+                    imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
                     staticWait(200);
                     waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
                 } catch (Exception e) {

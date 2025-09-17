@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
+import static org.tab.data.TestDataReader.getXMLData;
+
 public class CSVLogger {
 
-    private static final String CSV_FILE = "src/test/resources/logs/skipped_stores.csv";
+    private static final String CSV_FILE = "src/test/resources/logs/skipped_stores_"+getXMLData("currentcity")+".csv";
 
     /**
      * Append skipped store info to CSV
@@ -39,7 +41,7 @@ public class CSVLogger {
                     ? exception.getMessage()
                     .replace(",", ";")
                     .replaceAll("[\\r\\n]+", " ")
-                    : "have more than 9 images ( " + imageCount + " )";
+                    : "have more than 60 MB of images, count is ( " + imageCount + " )";
             writer.write(storeName + "," + safeMessage + System.lineSeparator());
         } catch (IOException e) {
             System.err.println("⚠️ Failed to log skipped store: " + storeName);
