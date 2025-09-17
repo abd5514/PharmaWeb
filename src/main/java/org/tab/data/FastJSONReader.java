@@ -26,7 +26,7 @@ public class FastJSONReader {
 
     /** Loads JSON from PropReader key "JSONFilePath" (or default path). */
     public FastJSONReader() throws IOException {
-        this(PropReader.get("JSONFilePath", "src/test/resources/testData.json"));
+        this(PropReader.get("JSONFilePath", "src/test/resources/Hail_details_json_chunk_2.json"));
     }
 
     /** Load from explicit file path. */
@@ -49,14 +49,14 @@ public class FastJSONReader {
         if (root.isArray()) {
             for (int i = 0; i < root.size(); i++) {
                 JsonNode n = root.get(i);
-                String url = n.path("googleMapsUri").asText();
+                String url = injectLangAfterCid(n.path("googleMapsUri").asText());
                 String name = n.path("displayName").path("text").asText();
                 if (url != null && !url.isBlank() && name != null && !name.isBlank()) {
                     items.add(new Item(i, name, url));
                 }
             }
         } else {
-            String url = root.path("googleMapsUri").asText();
+            String url = injectLangAfterCid(root.path("googleMapsUri").asText());
             String name = root.path("displayName").path("text").asText();
             if (url != null && !url.isBlank() && name != null && !name.isBlank()) {
                 items.add(new Item(0, name, url));
@@ -127,5 +127,24 @@ public class FastJSONReader {
         public Item(int index, String name, String url) {
             this.index = index; this.name = name; this.url = url;
         }
+    }
+
+    public static String injectLangAfterCid(String url) {
+        if (url == null || url.isEmpty()) return url;
+
+        // Find "cid=" and the next "&"
+        int cidIdx = url.indexOf("cid=");
+        if (cidIdx != -1) {
+            int ampIdx = url.indexOf("&", cidIdx);
+            if (ampIdx != -1) {
+                // Insert &hl=en&gl=us right before the "&"
+                return url.substring(0, ampIdx)
+                        + "&hl=en&gl=us"
+                        + url.substring(ampIdx);
+            }
+        }
+
+        // fallback: just append if no "&" found
+        return url + "&hl=en&gl=us";
     }
 }

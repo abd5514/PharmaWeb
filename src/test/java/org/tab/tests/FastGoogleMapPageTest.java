@@ -24,6 +24,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.tab.utils.common.SharedMethods.staticWait;
+
 @Listeners(ExtentTestListener.class)
 public class FastGoogleMapPageTest {
 
@@ -59,11 +61,12 @@ public class FastGoogleMapPageTest {
                     driver = newChrome();
 
                     // Try to switch to English once (if the link exists)
-                    try {
-                        driver.get("https://www.google.com");
+                    /*try {
+                        driver.get("https://www.google.com?hl=en");
                         FastGoogleMapPage pageTmp = new FastGoogleMapPage(driver);
-                        try { pageTmp.enBtn.click(); } catch (Exception ignored) {}
-                    } catch (Exception ignored) {}
+                        try {staticWait(100);
+                            pageTmp.enBtn.click(); } catch (Exception ignored) {}
+                    } catch (Exception ignored) {}*/
 
                     FastGoogleMapPage page = new FastGoogleMapPage(driver);
 
