@@ -71,16 +71,23 @@ public class FolderCleaner {
 
 package org.tab.utils;
 
+import org.tab.utils.ExtentReport.ExtentTestListener;
+import org.testng.annotations.Listeners;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.tab.data.TestDataReader.getXMLData;
+
+@Listeners(ExtentTestListener.class)
 public class FolderCleaner {
 
-    private static final String CSV_FILE = "src/test/resources/logs/skipped_stores.csv";
+    private static final String CSV_FILE = "src/test/resources/logs/skipped_stores_"+getXMLData("currentcity")+".csv";
     private static final String TARGET_DIR = "src/test/resources/images";
+    private static final String DONE_DIR = "src/test/resources/skipped";
     private static final String ARCHIVE_DIR = "src/test/resources/done_upload"; // destination
 
     public static void main(String[] args) {
@@ -111,9 +118,8 @@ public class FolderCleaner {
                 String folderName = folder.getName();
 
                 if (skippedStores.contains(folderName)) {
-                    System.out.println("✅ Skipping: " + folderName + " (found in CSV)");
+                    moveDirectory(folder.toPath(), Paths.get(DONE_DIR, folderName));
                 } else {
-                    System.out.println("📦 Moving: " + folderName + " (not in CSV)");
                     moveDirectory(folder.toPath(), Paths.get(ARCHIVE_DIR, folderName));
                 }
             }
