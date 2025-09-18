@@ -65,7 +65,6 @@ public class StaffDashboardPageTest extends Base {
                 }
                 pageBottom();
                 List<String> images = imageUploader.getImagePathsInFolder(storeFolders.get(i));
-                int imagesCount = images.size();
                 staticWait(500);
                 try {
                     /*if(images.size()>9){
@@ -84,7 +83,11 @@ public class StaffDashboardPageTest extends Base {
                 staffDashboardPage.uploadBtn.click();
                 System.out.println("current loop  " + i + " store   " + storeFolders.get(i) + " uploaded");
                 uploadCount++;
-                staticWait(800);
+                int param=(i+1)%100;
+                if(param==0){
+                    staticWait(100000);
+                }else {
+                    staticWait(60000);}
             } catch (Exception e) {
                 logSkipped(storeFolders.get(i),e,0);
                 skipCount++;
