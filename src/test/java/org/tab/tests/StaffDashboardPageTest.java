@@ -6,14 +6,19 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.tab.base.Base;
 import org.tab.core.instance.DriverFactory;
 import org.tab.data.ImageUploader;
+import org.tab.data.NewImageUploader;
+import org.tab.utils.CSVLogger;
 import org.tab.utils.ExtentReport.ExtentTestListener;
 import org.tab.utils.NewImageMenuFilterParallel;
 import org.tab.web_pages.StaffDashboardPage;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -83,13 +88,13 @@ public class StaffDashboardPageTest extends Base {
                 staffDashboardPage.uploadBtn.click();
                 System.out.println("current loop  " + i + " store   " + storeFolders.get(i) + " uploaded");
                 uploadCount++;
-                int param=(i+1)%100;
+                int param=(i+1)%400;
                 if(param==0){
                     staticWait(100000);
                 }else {
                     staticWait(60000);}
             } catch (Exception e) {
-                logSkipped(storeFolders.get(i),e,0);
+//                logSkipped(city, store, e, 0);
                 skipCount++;
             }
         }
@@ -304,4 +309,166 @@ public class StaffDashboardPageTest extends Base {
         NewImageMenuFilterParallel.processRootOnce();
     }
 
+    @Test(description = "menu image uploader new (per city)")
+    public void newMenuUploaderWithCity() {
+        int skipCount = 0;
+        int uploadCount = 0;
+
+        NewImageUploader imageUploader = new NewImageUploader();
+        StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
+
+        // Login
+        staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
+        staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
+        staffDashboardPage.loginBtn.click();
+        waitUntilElementClickable(staffDashboardPage.sideMenuStores);
+
+        // Loop over each city
+        for (String city : imageUploader.getCityFolderNames()) {
+            System.out.println("🏙 Processing city: " + city);
+
+            List<String> storeFolders = imageUploader.getStoreFolderNames(city);
+            for (int i = 0; i < storeFolders.size(); i++) {
+                    String store = storeFolders.get(i);
+                    String storeXpath = "//span[normalize-space()='" + store + "']";
+                    String storeSearch = store.replace(" ", "+");
+
+                String filterUrl = getXMLData("baseuploaderUrl")
+                        + "?tableFilters[city][value]=" + city
+                        + "&tableSearch=" + storeSearch;
+
+                    try {
+                        driver.get(filterUrl);
+
+                        try {
+                            driver.findElement(By.xpath(storeXpath)).click();
+                        } catch (org.openqa.selenium.NoSuchElementException ex) {
+                            String fallbackXpath = "(//span[contains(normalize-space(),'" + store + "')])[4]";
+                            System.out.println("⚠️ Fallback to: " + fallbackXpath);
+                            driver.findElement(By.xpath(fallbackXpath)).click();
+                        }
+
+                        pageBottom();
+                        List<String> images = imageUploader.getImagePathsInFolder(city, store);
+                        staticWait(500);
+
+                        imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
+                        staticWait(200);
+                        waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
+
+                        staffDashboardPage.uploadBtn.click();
+                        System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, images.size());
+                        uploadCount++;
+
+                        int param = (i + 1) % 400;
+                        if (param == 0) staticWait(600000);
+                        else staticWait(60000);
+                    } catch (Exception e) {
+                        logSkipped(city, store, e, 0);
+                        skipCount++;
+                    }
+                }
+            staticWait(120000);
+        }
+        System.out.println("🎯 Total stores uploaded: " + uploadCount + " | skipped: " + skipCount);
+    }
+
+    /*
+    * new uploader with city and run riyadh first
+    * start
+    * */
+    @Test(description = "menu image uploader new (per city)")
+    public void newMenuUploaderWithRiyadhFirst() {
+        int skipCount = 0;
+        int uploadCount = 0;
+
+        NewImageUploader imageUploader = new NewImageUploader();
+        StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
+
+        // ✅ Login
+        staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
+        staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
+        staffDashboardPage.loginBtn.click();
+        waitUntilElementClickable(staffDashboardPage.sideMenuStores);
+
+        // ✅ Get all cities
+        List<String> cities = imageUploader.getCityFolderNames();
+
+        // 🔑 Run Riyadh first if present
+        if (cities.contains("Riyadh")) {
+            System.out.println("🏙 Processing city (priority): Riyadh");
+            int[] counts = processCity("Riyadh", imageUploader, staffDashboardPage);
+            uploadCount += counts[0];
+            skipCount += counts[1];
+        }
+
+        // 🔑 Run all other cities
+        for (String city : cities) {
+            if ("Riyadh".equalsIgnoreCase(city)) continue; // skip Riyadh (already done)
+            System.out.println("🏙 Processing city: " + city);
+            int[] counts = processCity(city, imageUploader, staffDashboardPage);
+            uploadCount += counts[0];
+            skipCount += counts[1];
+        }
+
+        // ✅ Final summary
+        System.out.println("🎯 Total stores uploaded: " + uploadCount + " | skipped: " + skipCount);
+    }
+
+    private int[] processCity(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
+        int uploadCount = 0;
+        int skipCount = 0;
+
+        List<String> storeFolders = imageUploader.getStoreFolderNames(city);
+
+        for (int i = 0; i < storeFolders.size(); i++) {
+            String store = storeFolders.get(i);
+            String storeXpath = "//span[normalize-space()='" + store + "']";
+            String storeSearch = store.replace(" ", "+");
+
+            try {
+                String filterUrl = getXMLData("baseuploaderUrl")
+                        + "?tableFilters[city][value]=" + city
+                        + "&tableSearch=" + storeSearch;
+                driver.get(filterUrl);
+
+                try {
+                    driver.findElement(By.xpath(storeXpath)).click();
+                } catch (org.openqa.selenium.NoSuchElementException ex) {
+                    String fallbackXpath = "(//span[contains(normalize-space(),'" + store + "')])[4]";
+                    System.out.println("⚠️ Fallback to: " + fallbackXpath);
+                    driver.findElement(By.xpath(fallbackXpath)).click();
+                }
+
+                pageBottom();
+                List<String> images = imageUploader.getImagePathsInFolder(city, store);
+                staticWait(500);
+
+                imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
+                staticWait(200);
+                waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
+
+                staffDashboardPage.uploadBtn.click();
+                System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, images.size());
+                uploadCount++;
+
+                // pacing
+                int param = (i + 1) % 400;
+                if (param == 0) staticWait(100000);
+                else staticWait(60000);
+
+            } catch (Exception e) {
+//                logSkipped(city, store, e, 0);
+                CSVLogger.logSkipped(city, store, e, 0);
+                skipCount++;
+            }
+        }
+
+        return new int[]{uploadCount, skipCount};
+    }
+
+    /*
+     * new uploader with city and run riyadh first
+     * end
+     * */
 }
