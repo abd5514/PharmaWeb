@@ -1,10 +1,12 @@
 package org.tab.tests;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.tab.base.Base;
-import org.tab.core.instance.DriverFactory;
 import org.tab.data.ImageUploader;
 import org.tab.data.NewImageUploader;
 import org.tab.utils.CSVLogger;
@@ -14,30 +16,21 @@ import org.tab.web_pages.StaffDashboardPage;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 // --- add these imports at the top of StaffDashboardPageTest.java ---
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 import static org.tab.data.TestDataReader.getXMLData;
 import static org.tab.utils.CSVLogger.logSkipped;
-import static org.tab.utils.ImageMenuFilterParallel.processRootOnce;
 import static org.tab.utils.common.SharedMethods.*;
 
 @Listeners(ExtentTestListener.class)
@@ -309,10 +302,9 @@ public class StaffDashboardPageTest extends Base {
         NewImageMenuFilterParallel.processRootOnce();
     }
 
-    @Test(description = "menu image uploader new (per city)")
-    public void newMenuUploaderWithCity() {
+    /*@Test(description = "menu image uploader new (per city)")
+    public void uploadStatus() {
         int skipCount = 0;
-        int uploadCount = 0;
 
         NewImageUploader imageUploader = new NewImageUploader();
         StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
@@ -326,52 +318,38 @@ public class StaffDashboardPageTest extends Base {
         // Loop over each city
         for (String city : imageUploader.getCityFolderNames()) {
             System.out.println("🏙 Processing city: " + city);
-
             List<String> storeFolders = imageUploader.getStoreFolderNames(city);
-            for (int i = 0; i < storeFolders.size(); i++) {
-                    String store = storeFolders.get(i);
-                    String storeXpath = "//span[normalize-space()='" + store + "']";
-                    String storeSearch = store.replace(" ", "+");
+            for (String store : storeFolders) {
+                String storeXpath = "//span[normalize-space()='"+store+"']/ancestor::tr//td[12]//span";
+                String storeSearch = store.replace(" ", "+");
 
                 String filterUrl = getXMLData("baseuploaderUrl")
                         + "?tableFilters[city][value]=" + city
                         + "&tableSearch=" + storeSearch;
 
+                try {
+                    driver.get(filterUrl);
                     try {
-                        driver.get(filterUrl);
-
-                        try {
-                            driver.findElement(By.xpath(storeXpath)).click();
-                        } catch (org.openqa.selenium.NoSuchElementException ex) {
-                            String fallbackXpath = "(//span[contains(normalize-space(),'" + store + "')])[4]";
-                            System.out.println("⚠️ Fallback to: " + fallbackXpath);
-                            driver.findElement(By.xpath(fallbackXpath)).click();
+                        int products = Integer.parseInt(driver.findElement(By.xpath(storeXpath)).getText());
+                        if (products <= 0) {
+                            logSkipped(city, store, null, 0);
+                            skipCount++;
+                            System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, products);
                         }
-
-                        pageBottom();
-                        List<String> images = imageUploader.getImagePathsInFolder(city, store);
-                        staticWait(500);
-
-                        imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
-                        staticWait(200);
-                        waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
-
-                        staffDashboardPage.uploadBtn.click();
-                        System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, images.size());
-                        uploadCount++;
-
-                        int param = (i + 1) % 400;
-                        if (param == 0) staticWait(600000);
-                        else staticWait(60000);
-                    } catch (Exception e) {
-                        logSkipped(city, store, e, 0);
-                        skipCount++;
+                    } catch (org.openqa.selenium.NoSuchElementException ex) {
+                        String fallbackXpath = "((//span[contains(normalize-space(),'"+store+"')])[4]/ancestor::tr)//td[12]//span";
+                        int products = Integer.parseInt(driver.findElement(By.xpath(fallbackXpath)).getText());
+                        if (products <= 0) {
+                            logSkipped(city, store, null, 0);
+                            skipCount++;
+                            System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, products);
+                        }
                     }
-                }
-            staticWait(120000);
+                } catch (Exception ignored) {}
+            }
         }
-        System.out.println("🎯 Total stores uploaded: " + uploadCount + " | skipped: " + skipCount);
-    }
+        System.out.println("🎯 Total stores skipped: " + skipCount);
+    }*/
 
     /*
     * new uploader with city and run riyadh first
@@ -400,6 +378,7 @@ public class StaffDashboardPageTest extends Base {
             int[] counts = processCity("Riyadh", imageUploader, staffDashboardPage);
             uploadCount += counts[0];
             skipCount += counts[1];
+            staticWait(600000); // 5 minutes wait after Riyadh
         }
 
         // 🔑 Run all other cities
@@ -409,13 +388,14 @@ public class StaffDashboardPageTest extends Base {
             int[] counts = processCity(city, imageUploader, staffDashboardPage);
             uploadCount += counts[0];
             skipCount += counts[1];
+            staticWait(300000); // 5 minutes wait between cities
         }
 
         // ✅ Final summary
         System.out.println("🎯 Total stores uploaded: " + uploadCount + " | skipped: " + skipCount);
     }
 
-    private int[] processCity(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
+    /*private int[] processCity(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
         int uploadCount = 0;
         int skipCount = 0;
 
@@ -451,20 +431,182 @@ public class StaffDashboardPageTest extends Base {
                 staffDashboardPage.uploadBtn.click();
                 System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, images.size());
                 uploadCount++;
-
-                // pacing
-                int param = (i + 1) % 400;
-                if (param == 0) staticWait(100000);
-                else staticWait(60000);
+                staticWait(50000);
 
             } catch (Exception e) {
-//                logSkipped(city, store, e, 0);
                 CSVLogger.logSkipped(city, store, e, 0);
                 skipCount++;
             }
         }
-
         return new int[]{uploadCount, skipCount};
+    }*/
+    /*private int[] processCity(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
+        int uploadCount = 0;
+        int skipCount = 0;
+
+        List<String> storeFolders = imageUploader.getStoreFolderNames(city);
+
+        for (int i = 0; i < storeFolders.size(); i++) {
+            String store = storeFolders.get(i);
+            String storeXpath = "//span[normalize-space()='" + store + "']";
+            String storeSearch = store.replace(" ", "+");
+
+            try {
+                String filterUrl = getXMLData("baseuploaderUrl")
+                        + "?tableFilters[city][value]=" + city
+                        + "&tableSearch=" + storeSearch;
+                driver.get(filterUrl);
+                staticWait(500);
+                int products = Integer.parseInt(driver.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span")).getText());
+
+                    try {
+                        driver.findElement(By.xpath(storeXpath)).click();
+                    } catch (org.openqa.selenium.NoSuchElementException ex) {
+                        String fallbackXpath = "(//span[contains(normalize-space(),'" + store + "')])[4]";
+                        System.out.println("⚠️ Fallback to: " + fallbackXpath);
+                        driver.findElement(By.xpath(fallbackXpath)).click();
+                    }
+
+                    pageBottom();
+                    List<String> images = imageUploader.getImagePathsInFolder(city, store);
+                    staticWait(500);
+                    if(images.isEmpty()){
+                        CSVLogger.logSkipped(city, store, null, 0);
+                        skipCount++;
+                        continue;
+                    }
+                    imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
+                    staticWait(200);
+                    try {
+                        waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
+                    } catch (Exception ignored) {
+                    }
+                    pageBottom();
+                    staffDashboardPage.uploadBtn.click();
+                    System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, images.size());
+                    uploadCount++;
+                    staticWait(60000);
+
+                    // 🔎 New product count validation
+                    try {
+                        driver.get(filterUrl);
+                        staticWait(60000);
+                        products = Integer.parseInt(driver.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span")).getText());
+                        System.out.println("products after upload  " + products);
+                        if (products <= 0) {
+                            CSVLogger.logSkipped(city, store, null, 0);
+                            skipCount++;
+                        }
+                    } catch (org.openqa.selenium.NoSuchElementException ex) {
+                        String fallbackXpath = "((//span[contains(normalize-space(),'" + store + "')])[4]/ancestor::tr)//td[12]//span";
+                        staticWait(60000);
+                        products = Integer.parseInt(driver.findElement(By.xpath(fallbackXpath)).getText());
+                        System.out.println("products after upload  " + products);
+                        if (products <= 0) {
+                            CSVLogger.logSkipped(city, store, null, 0);
+                            skipCount++;
+                        }
+                    }
+
+            } catch (Exception e) {
+                CSVLogger.logSkipped(city, store, e, 0);
+                skipCount++;
+            }
+        }
+        return new int[]{uploadCount, skipCount};
+    }*/
+
+    private int[] processCity(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
+        int uploadCount = 0;
+        int skipCount = 0;
+
+        List<String> storeFolders = imageUploader.getStoreFolderNames(city);
+
+        for (int i = 0; i < storeFolders.size(); i++) {
+            String store = storeFolders.get(i);
+            String storeXpath = "//span[normalize-space()='" + store + "']";
+            String storeSearch = store.replace(" ", "+");
+
+            try {
+                String filterUrl = getXMLData("baseuploaderUrl")
+                        + "?tableFilters[city][value]=" + city
+                        + "&tableSearch=" + storeSearch;
+                driver.get(filterUrl);
+                staticWait(500);
+
+                int products = Integer.parseInt(
+                        driver.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span")).getText()
+                );
+                try {
+                    driver.findElement(By.xpath(storeXpath)).click();
+                } catch (org.openqa.selenium.NoSuchElementException ex) {
+                    String fallbackXpath = "(//span[contains(normalize-space(),'" + store + "')])[4]";
+                    System.out.println("⚠️ Fallback to: " + fallbackXpath);
+                    driver.findElement(By.xpath(fallbackXpath)).click();
+                }
+
+                pageBottom();
+                List<String> images = imageUploader.getImagePathsInFolder(city, store);
+                int waitTime =images.size()*20000;
+                staticWait(500);
+                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
+
+                if (images.isEmpty()) {
+                    CSVLogger.logSkipped(city, store, null, 0);
+                    skipCount++;
+                    continue;
+                }
+
+                imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
+                staticWait(200);
+                try {
+                    waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
+                } catch (Exception ignored) {}
+                pageBottom();
+                staffDashboardPage.uploadBtn.click();
+                System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, images.size());
+                uploadCount++;
+                staticWait(waitTime);
+
+                // 🔎 Use dynamic wait instead of fixed sleep
+                driver.get(filterUrl);
+                staticWait(200);
+                products = waitForProductsAboveZero(driver, storeXpath);
+                System.out.println("📦 Products AFTER upload for store [" + store + "]: " + products);
+
+                if (products <= 0) {
+                    CSVLogger.logSkipped(city, store, null, 0);
+                    skipCount++;
+                }
+
+            } catch (Exception e) {
+                CSVLogger.logSkipped(city, store, e, 0);
+                skipCount++;
+            }
+        }
+        return new int[]{uploadCount, skipCount};
+    }
+
+    /**
+     * Dynamic wait until product count > 0 for the given store row.
+     */
+    private int waitForProductsAboveZero(WebDriver driver, String storeXpath) {
+        Wait<WebDriver> wait = new FluentWait<>(driver)
+                .pollingEvery(Duration.ofMillis(500))
+                .ignoring(NoSuchElementException.class)
+                .ignoring(StaleElementReferenceException.class);
+
+        return wait.until(d -> {
+            WebElement span = d.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span"));
+            String text = span.getText().trim();
+            if (!text.isEmpty() && text.matches("\\d+")) {
+                int value = Integer.parseInt(text);
+                if (value > 0) {
+                    return value;
+                }
+            }
+            return null; // keep polling
+        });
     }
 
     /*

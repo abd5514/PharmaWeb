@@ -71,6 +71,12 @@ public class CSVLogger {
      * @param imageCount number of images if skipped due to size
      */
     public static synchronized void logSkipped(String cityName, String storeName, Exception exception, int imageCount) {
+        // ❌ Filter out known non-critical skip case
+        if (exception != null && exception.getMessage() != null &&
+                exception.getMessage().startsWith("Expected condition failed: waiting for text ('Save changes') to be present")) {
+            System.out.printf("⚠️ Not logging store %s in %s due to benign 'Save changes' wait issue%n", storeName, cityName);
+            return; // don’t log this case
+        }
         // Each city gets its own skipped_stores_<city>.csv
         File file = new File(LOG_DIR + "skipped_stores_" + cityName + ".csv");
 
@@ -96,7 +102,7 @@ public class CSVLogger {
                     ? exception.getMessage()
                     .replace(",", ";")
                     .replaceAll("[\\r\\n]+", " ")
-                    : "have more than 60 MB of images, count is ( " + imageCount + " )";
+                    : /*"have more than 60 MB of images, count is ( " + imageCount + " )"*/"images not uploaded correctly or folder is empty, image count is  " + imageCount;
 
             writer.write(cityName + "," + storeName + "," + safeMessage + System.lineSeparator());
 

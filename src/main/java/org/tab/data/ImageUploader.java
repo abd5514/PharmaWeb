@@ -78,7 +78,7 @@ public class ImageUploader {
         }
 
         String lower = imageName.toLowerCase(Locale.ROOT);
-        String[] exts = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".pdf"};
+        String[] exts = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"};
         boolean hasExt = lower.contains(".");
 
         try (Stream<Path> stream = Files.walk(baseDir)) {
