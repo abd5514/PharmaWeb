@@ -1,8 +1,6 @@
 package org.tab.utils.common;
 
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -11,6 +9,7 @@ import org.tab.web_pages.LoginPage;
 
 import java.time.Duration;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
 
@@ -69,9 +68,31 @@ public class SharedMethods {
     }
 
     public static void waitUntilTextChanged(WebElement element, String text) {
-        WebDriverWait wait = new WebDriverWait(getDriver (),Duration.ofSeconds(10));
+        WebDriverWait wait = new WebDriverWait(getDriver (),Duration.ofSeconds(30));
         wait.until(ExpectedConditions.textToBePresentInElement(element, text));
     }
+
+    public static void clickUntilElementFound(WebDriver driver, WebElement button, WebElement targetXpath, int timeoutSeconds) {
+        long endTime = System.currentTimeMillis() + timeoutSeconds * 1000;
+        while (System.currentTimeMillis() < endTime) {
+            try {
+                // Check if target element exists
+                if (targetXpath.isDisplayed()) {
+                    return; // Stop once found
+                }
+                // Otherwise click button
+                button.click();
+                Thread.sleep(1000); // short pause before re-checking
+            } catch (StaleElementReferenceException e) {
+                // Button went stale → re-find it if necessary
+                break; // or refetch the button if you have a locator
+            } catch (Exception e) {
+            }
+        }
+
+        throw new TimeoutException("Target element not found within " + timeoutSeconds + " seconds.");
+    }
+
 
     public static void mouseOverAction(WebElement Locator)
     {

@@ -38,8 +38,8 @@ public class StaffDashboardPage {
     public WebElement cityDropdown;
     @FindBy (xpath="//h1[normalize-space()='Stores']")
     public WebElement storesH1;
-    @FindBy(xpath = "//tbody/tr[1]//td[12]//span")
-    public WebElement statusSpan;
+    @FindBy(xpath = "//div[contains(@class,'flex w-full gap-3 p-4')]")
+    public WebElement savePopup;
 
 
 

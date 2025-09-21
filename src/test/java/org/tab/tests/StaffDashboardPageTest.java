@@ -12,6 +12,7 @@ import org.tab.data.NewImageUploader;
 import org.tab.utils.CSVLogger;
 import org.tab.utils.ExtentReport.ExtentTestListener;
 import org.tab.utils.NewImageMenuFilterParallel;
+import org.tab.utils.common.SharedMethods;
 import org.tab.web_pages.StaffDashboardPage;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -378,7 +379,6 @@ public class StaffDashboardPageTest extends Base {
             int[] counts = processCity("Riyadh", imageUploader, staffDashboardPage);
             uploadCount += counts[0];
             skipCount += counts[1];
-            staticWait(600000); // 5 minutes wait after Riyadh
         }
 
         // 🔑 Run all other cities
@@ -388,7 +388,7 @@ public class StaffDashboardPageTest extends Base {
             int[] counts = processCity(city, imageUploader, staffDashboardPage);
             uploadCount += counts[0];
             skipCount += counts[1];
-            staticWait(300000); // 5 minutes wait between cities
+            staticWait(300000); // 5 min break between cities
         }
 
         // ✅ Final summary
@@ -519,10 +519,9 @@ public class StaffDashboardPageTest extends Base {
     private int[] processCity(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
         int uploadCount = 0;
         int skipCount = 0;
-
+        int j=0;
         List<String> storeFolders = imageUploader.getStoreFolderNames(city);
-
-        for (int i = 0; i < storeFolders.size(); i++) {
+        for (int i = j; i < storeFolders.size(); i++) {
             String store = storeFolders.get(i);
             String storeXpath = "//span[normalize-space()='" + store + "']";
             String storeSearch = store.replace(" ", "+");
@@ -547,23 +546,26 @@ public class StaffDashboardPageTest extends Base {
 
                 pageBottom();
                 List<String> images = imageUploader.getImagePathsInFolder(city, store);
-                int waitTime =images.size()*20000;
+                int waitTime =images.size()*13000;
                 staticWait(500);
-                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
-
                 if (images.isEmpty()) {
                     CSVLogger.logSkipped(city, store, null, 0);
                     skipCount++;
                     continue;
                 }
+                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
 
                 imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
-                staticWait(200);
-                try {
-                    waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
-                } catch (Exception ignored) {}
+                staticWait(1000);
                 pageBottom();
+                pageBottom();
+                waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
+                pageBottom();
+                pageBottom();
+                staticWait(2000);
                 staffDashboardPage.uploadBtn.click();
+                clickUntilElementFound(driver,staffDashboardPage.uploadBtn,staffDashboardPage.savePopup,20);
+                try{staffDashboardPage.uploadBtn.click();}catch (Exception ignored){}
                 System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, images.size());
                 uploadCount++;
                 staticWait(waitTime);
@@ -571,11 +573,11 @@ public class StaffDashboardPageTest extends Base {
                 // 🔎 Use dynamic wait instead of fixed sleep
                 driver.get(filterUrl);
                 staticWait(200);
-                products = waitForProductsAboveZero(driver, storeXpath);
+                products = waitForProductsAboveZero(driver, storeXpath,images.size(),filterUrl);
                 System.out.println("📦 Products AFTER upload for store [" + store + "]: " + products);
 
                 if (products <= 0) {
-                    CSVLogger.logSkipped(city, store, null, 0);
+                    CSVLogger.logSkipped(city, store, null, images.size());
                     skipCount++;
                 }
 
@@ -590,20 +592,42 @@ public class StaffDashboardPageTest extends Base {
     /**
      * Dynamic wait until product count > 0 for the given store row.
      */
-    private int waitForProductsAboveZero(WebDriver driver, String storeXpath) {
+    private int waitForProductsAboveZero(WebDriver driver, String storeXpath,int imagesCount,String url) {
+        WebElement span = driver.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span"));
+        System.out.println("Found span text = " + span.getText());
+        int timeoutSeconds = imagesCount*120;
         Wait<WebDriver> wait = new FluentWait<>(driver)
-                .pollingEvery(Duration.ofMillis(500))
+                .withTimeout(Duration.ofSeconds(timeoutSeconds))  // <-- Add timeout
+                .pollingEvery(Duration.ofMillis(10000))
                 .ignoring(NoSuchElementException.class)
                 .ignoring(StaleElementReferenceException.class);
 
-        return wait.until(d -> {
-            WebElement span = d.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span"));
-            String text = span.getText().trim();
+        /*return wait.until(d -> {
+            WebElement span1 = d.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span"));
+            String text = span1.getText().trim();
             if (!text.isEmpty() && text.matches("\\d+")) {
                 int value = Integer.parseInt(text);
                 if (value > 0) {
                     return value;
                 }
+            }
+            return null; // keep polling
+        });*/
+        return wait.until(d -> {
+            try {
+                WebElement span1 = d.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span"));
+                String text = span1.getText().trim();
+                System.out.println("DEBUG -> Found text: '" + text + "'");
+                if (!text.isEmpty() && text.matches("\\d+")) {
+                    int value = Integer.parseInt(text);
+                    if (value > 0) {
+                        System.out.println("DEBUG -> Returning value: " + value);
+                        return value;
+                    }
+                }
+                driver.get(url);
+            } catch (Exception e) {
+                System.out.println("DEBUG -> Exception: " + e.getMessage());
             }
             return null; // keep polling
         });
@@ -613,4 +637,88 @@ public class StaffDashboardPageTest extends Base {
      * new uploader with city and run riyadh first
      * end
      * */
+
+    @Test(description = "menu image uploader new (per city)")
+    public void uploadChecker() {
+        int skipCount = 0;
+        int uploadCount = 0;
+
+        NewImageUploader imageUploader = new NewImageUploader();
+        StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
+
+        // ✅ Login
+        staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
+        staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
+        staffDashboardPage.loginBtn.click();
+        waitUntilElementClickable(staffDashboardPage.sideMenuStores);
+
+        // ✅ Get all cities
+        List<String> cities = imageUploader.getCityFolderNames();
+
+        // 🔑 Run Riyadh first if present
+        if (cities.contains("Riyadh")) {
+            System.out.println("🏙 Processing city (priority): Riyadh");
+            int[] counts = cityChecker("Riyadh", imageUploader, staffDashboardPage);
+            uploadCount += counts[0];
+            skipCount += counts[1];
+        }
+
+        // 🔑 Run all other cities
+        for (String city : cities) {
+            if ("Riyadh".equalsIgnoreCase(city)) continue; // skip Riyadh (already done)
+            System.out.println("🏙 Processing city: " + city);
+            int[] counts = cityChecker(city, imageUploader, staffDashboardPage);
+            uploadCount += counts[0];
+            skipCount += counts[1];
+        }
+
+        // ✅ Final summary
+        System.out.println("🎯 Total stores uploaded: " + uploadCount + " | skipped: " + skipCount);
+    }
+
+    private int[] cityChecker(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
+        int uploadCount = 0;
+        int skipCount = 0;
+        int j=0;
+        List<String> storeFolders = imageUploader.getStoreFolderNames(city);
+        for (int i = j; i < storeFolders.size(); i++) {
+            String store = storeFolders.get(i);
+            String storeXpath = "//span[normalize-space()='" + store + "']";
+            String storeSearch = store.replace(" ", "+");
+
+            try {
+                String filterUrl = getXMLData("baseuploaderUrl")
+                        + "?tableFilters[city][value]=" + city
+                        + "&tableSearch=" + storeSearch;
+                driver.get(filterUrl);
+                staticWait(500);
+                int products=0;
+                try {
+                    products=Integer.parseInt(
+                            driver.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span")).getText());
+                } catch (org.openqa.selenium.NoSuchElementException ex) {
+                    String fallbackXpath = "(//span[contains(normalize-space(),'" + store + "')])[4]";
+                    products=Integer.parseInt(
+                            driver.findElement(By.xpath(fallbackXpath + "/ancestor::tr//td[12]//span")).getText());
+                }
+                System.out.println("📦 Products checker [" + store + "]: " + products);
+                List<String> images = imageUploader.getImagePathsInFolder(city, store);
+                staticWait(500);
+                if (images.isEmpty()) {
+                    CSVLogger.logSkipped(city, store, null, 0);
+                    skipCount++;
+                    continue;
+                }
+                if (products <= 0) {
+                    CSVLogger.logSkipped(city, store, null, images.size());
+                    skipCount++;
+                }
+
+            } catch (Exception e) {
+                CSVLogger.logSkipped(city, store, e, 0);
+                skipCount++;
+            }
+        }
+        return new int[]{uploadCount, skipCount};
+    }
 }
