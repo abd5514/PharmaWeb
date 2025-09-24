@@ -68,7 +68,7 @@ public class SharedMethods {
     }
 
     public static void waitUntilTextChanged(WebElement element, String text) {
-        WebDriverWait wait = new WebDriverWait(getDriver (),Duration.ofSeconds(30));
+        WebDriverWait wait = new WebDriverWait(getDriver (),Duration.ofSeconds(120));
         wait.until(ExpectedConditions.textToBePresentInElement(element, text));
     }
 

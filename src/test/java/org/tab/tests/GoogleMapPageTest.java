@@ -25,12 +25,24 @@ public class GoogleMapPageTest extends Base {
         driver.get(uri);
         googleMapPage.enBtn.click();
         staticWait(1000);
-        for (int i = 0; i < count; i++) {
+        for (int i = 387; i < count; i++) {
             var item = r.getNode(i, "");
             String url = item.path("googleMapsUri").asText();
             String storeName = item.path("displayName").path("text").asText();
             driver.get(url);
-            staticWait(400);
+            if (i==0){staticWait(30000);}
+            else{staticWait(400);}
+            staticWait(30000);
+            try {
+                System.out.println("before captcha check");
+                if(googleMapPage.captchaCheckBox.isDisplayed()){
+                    staticWait(30000);
+                    System.out.println("captcha appeared");
+                    googleMapPage.saveFailedDownload(
+                            "google recaptcha appears again, saving store to re-run later",
+                            storeName, null, i);
+                }
+            } catch (Exception ignored) {}
             try {
                 googleMapPage.menuBtn.click();
                 staticWait(200);

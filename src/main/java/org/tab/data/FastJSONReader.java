@@ -26,7 +26,7 @@ public class FastJSONReader {
 
     /** Loads JSON from PropReader key "JSONFilePath" (or default path). */
     public FastJSONReader() throws IOException {
-        this(PropReader.get("JSONFilePath", "src/test/resources/Sakaka_details_json_chunk_2.json"));
+        this(PropReader.get("JSONFilePath", "src/test/resources/Riyadh_details_json_chunk_4.json"));
     }
 
     /** Load from explicit file path. */
@@ -49,14 +49,14 @@ public class FastJSONReader {
         if (root.isArray()) {
             for (int i = 0; i < root.size(); i++) {
                 JsonNode n = root.get(i);
-                String url = injectLangAfterCid(n.path("googleMapsUri").asText());
+                String url = injectLangAfterCid(n.path("googleMapsUri").asText());/*n.path("googleMapsUri").asText();*/
                 String name = n.path("displayName").path("text").asText();
                 if (url != null && !url.isBlank() && name != null && !name.isBlank()) {
                     items.add(new Item(i, name, url));
                 }
             }
         } else {
-            String url = injectLangAfterCid(root.path("googleMapsUri").asText());
+            String url = injectLangAfterCid(root.path("googleMapsUri").asText());/*root.path("googleMapsUri").asText();*/
             String name = root.path("displayName").path("text").asText();
             if (url != null && !url.isBlank() && name != null && !name.isBlank()) {
                 items.add(new Item(0, name, url));

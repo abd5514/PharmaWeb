@@ -26,8 +26,10 @@ public class GoogleMapPage {
     public WebElement imageContainer;
     @FindBy (xpath="//a[normalize-space()='English']")
     public WebElement enBtn;
-    @FindBy (xpath="//button[contains(@class,'Tc0rEd XMkGfe cPtXLb')]")
+    @FindBy (xpath="(//button[contains(@class,'Tc0rEd XMkGfe cPtXLb')])[2]")
     public WebElement nextBtn;
+    @FindBy(xpath ="//a[@href='//www.google.com/policies/terms/']")
+    public WebElement captchaCheckBox;
 
 
     public GoogleMapPage(WebDriver driver) {
@@ -42,9 +44,8 @@ public class GoogleMapPage {
                 if (nextBtn.isDisplayed()) {
                     for(int j=0;j<40;j++){
                         nextBtn.click();
-                        staticWait(5);
                     }
-                } else break;
+                } /*else break;*/
             } catch (Exception ignored) {}
         }
         try {
@@ -203,7 +204,7 @@ public class GoogleMapPage {
 
                     String timestamp = LocalDateTime.now().toString();
                     String errorMsg = (e == null || e.getMessage() == null) ? "" :
-                            e.getMessage().replaceAll("[\\r\\n]", " ");
+                            e.getMessage().replaceAll("[\\r\\n]", "google recaptcha appears again, saving store to re-run later");
 
                     // Always quote to be safe with commas
                     pw.printf("\"%s\",\"%s\",\"%s\",\"%s\"%n",
