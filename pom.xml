@@ -114,6 +114,15 @@
     </dependencies>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <excludes>
+                    <exclude>done_upload/**</exclude>
+                    <exclude>skipped/**</exclude>
+                </excludes>
+            </testResource>
+        </testResources>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

@@ -155,11 +155,11 @@ public class StaffDashboardPageTest extends Base {
                 skipCount++;
                 continue;
             }
-            /*else if(images.size()>9){
+            else if(images.size()>30){
                 CSVLogger.logSkipped(city, store, null, images.size());
                 skipCount++;
                 continue;
-            }*/
+            }
             try {
                 String filterUrl = getXMLData("baseuploaderUrl")
                         + "?tableFilters[city][value]=" + city
@@ -187,7 +187,7 @@ public class StaffDashboardPageTest extends Base {
 
                 pageBottom();
 
-                int waitTime =images.size()*20000;
+                int waitTime =images.size()*1000;
                 staticWait(1000);
 
 //                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
@@ -200,15 +200,14 @@ public class StaffDashboardPageTest extends Base {
                 waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
                 pageBottom();
                 pageBottom();
-                staticWait(1000);
-                staticWait(200);
+                staticWait(1200);
                 staffDashboardPage.uploadBtn.click();
                 clickUntilElementFound(driver,staffDashboardPage.uploadBtn,staffDashboardPage.savePopup,20);
 //                try{staffDashboardPage.uploadBtn.click();}catch (Exception ignored){}
                 System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, images.size());
                 uploadCount++;
-                /*staticWait(waitTime);
-                // 🔎 Use dynamic wait instead of fixed sleep
+                staticWait(waitTime);
+                /*// 🔎 Use dynamic wait instead of fixed sleep
                 driver.get(filterUrl);
                 staticWait(200);
                 products = waitForProductsAboveZero(driver, store,images.size(),filterUrl);
