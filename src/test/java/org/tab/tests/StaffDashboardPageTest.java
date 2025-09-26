@@ -532,7 +532,7 @@ public class StaffDashboardPageTest extends Base {
 
 
     /*
-    * check uploader with parallel stores start
+    * check uploader stores start
     * */
     @Test(description = "menu image uploader new (per city)")
     public void checkImageUpload() {
@@ -580,19 +580,11 @@ public class StaffDashboardPageTest extends Base {
         List<String> storeFolders = imageUploader.getStoreFolderNames(city);
         for (int i = j; i < storeFolders.size(); i++) {
             String store = storeFolders.get(i);
-            String storeXpath = /*"//span[normalize-space()='" + store + "']";*/"//div[@data-store='id_"+store+"']";
-            //div[@data-store='id_نمق كافيه | Namq Cafe']
-            //div[@data-store='product_AteeqTea']//span
+            String storeXpath = "//div[@data-store='id_"+store+"']";
             int products;
             String storeSearch = store.replace(" ", "+");
             List<String> images = imageUploader.getImagePathsInFolder(city, store);
-            if (images.isEmpty()) {
-                logSkipped(city, store, null, 0);
-                skipCount++;
-                continue;
-            }
-            else if(images.size()>30){
-                CSVLogger.logSkipped(city, store, null, images.size());
+            if (images.isEmpty() || images.size()>30) {
                 skipCount++;
                 continue;
             }
@@ -626,11 +618,10 @@ public class StaffDashboardPageTest extends Base {
                 }
                 pageBottom();
                 waitUntilElementClickable(staffDashboardPage.sideMenuStores);
-                if(images.isEmpty())continue;
                 int waitTime;
                 if(images.size()<2){
                     waitTime=images.size()*2000;
-                }else {waitTime=images.size()*1000;}
+                }else {waitTime=images.size()*1200;}
                 staticWait(waitTime);
                 staffDashboardPage.assertDisplayedAndLog(staffDashboardPage.imageContainer, city, store, images.size());
                 uploadCount++;
@@ -643,6 +634,6 @@ public class StaffDashboardPageTest extends Base {
     }
 
     /*
-     * check uploader with parallel stores end
+     * check uploader stores end
      * */
 }
