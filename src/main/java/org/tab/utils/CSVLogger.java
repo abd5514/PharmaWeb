@@ -92,20 +92,24 @@ public class CSVLogger {
                 writer.write('\ufeff'); // UTF-8 BOM
                 writer.write("City,Store,ErrorMessage" + System.lineSeparator());
             }
-            String msg="";
+            String msg;
             if(imageCount==0){
                 msg="folder have no image";
             }else if(imageCount>30){msg="have more than 30 images, count is ( " + imageCount + " )";}
             else{
                 msg="images not uploaded correctly";
             }
-
-            String safeMessage = (exception != null )
-                    ? exception.getMessage()
-                    .replace(",", ";")
-                    .replaceAll("[\\r\\n]+", " ")
-                    : msg;
-            if (safeMessage.contains("xpath\":\"//div[@class='filepond--image-preview-wrapper']")){safeMessage="images not uploaded to the server correctly";}
+            String safeMessage;
+            if(exception.getMessage().startsWith(
+                    "no such element: Unable to locate element: {\"method\":\"xpath\",\"selector\":\"//div[@class='filepond--image-preview-wrapper']\"}")){
+                safeMessage="images not uploaded on server correctly";
+            }else {
+                safeMessage = (exception != null)
+                        ? exception.getMessage()
+                        .replace(",", ";")
+                        .replaceAll("[\\r\\n]+", " ")
+                        : msg;
+            }
             writer.write(cityName + "," + storeName + "," + safeMessage + System.lineSeparator());
 
         } catch (IOException e) {

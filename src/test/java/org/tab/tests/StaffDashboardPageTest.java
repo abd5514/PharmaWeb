@@ -534,7 +534,7 @@ public class StaffDashboardPageTest extends Base {
     /*
     * check uploader stores start
     * */
-    @Test(description = "menu image uploader new (per city)")
+    @Test(description = "check upload status with logging not uploaded correctly")
     public void checkImageUpload() {
         int skipCount = 0;
         int uploadCount = 0;
@@ -621,12 +621,15 @@ public class StaffDashboardPageTest extends Base {
                 int waitTime;
                 if(images.size()<2){
                     waitTime=images.size()*2000;
-                }else {waitTime=images.size()*1200;}
+                }else {waitTime=images.size()*1000;}
                 staticWait(waitTime);
                 staffDashboardPage.assertDisplayedAndLog(staffDashboardPage.imageContainer, city, store, images.size());
                 uploadCount++;
             } catch (Exception e) {
-                logSkipped(city, store, e, 0);
+                if(e.getMessage().startsWith(
+                        "no such element: Unable to locate element: {\"method\":\"xpath\",\"selector\":\"//div[@class='filepond--image-preview-wrapper']\"}")){
+                    logSkipped(city, store, e, 0);
+                }
                 skipCount++;
             }
         }
