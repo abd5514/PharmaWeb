@@ -71,6 +71,7 @@ public class CSVLogger {
      * @param imageCount number of images if skipped due to size
      */
     public static synchronized void logSkipped(String cityName, String storeName, Exception exception, int imageCount) {
+
         // Each city gets its own skipped_stores_<city>.csv
         File file = new File(LOG_DIR + "skipped_stores_" + cityName + ".csv");
 
@@ -99,12 +100,12 @@ public class CSVLogger {
                 msg="images not uploaded correctly";
             }
 
-            String safeMessage = (exception != null)
+            String safeMessage = (exception != null )
                     ? exception.getMessage()
                     .replace(",", ";")
                     .replaceAll("[\\r\\n]+", " ")
                     : msg;
-
+            if (safeMessage.contains("xpath\":\"//div[@class='filepond--image-preview-wrapper']")){safeMessage="images not uploaded to the server correctly";}
             writer.write(cityName + "," + storeName + "," + safeMessage + System.lineSeparator());
 
         } catch (IOException e) {

@@ -62,7 +62,7 @@ public class FastGoogleMapPage {
         }
 
         // Scroll/advance the gallery several times to force-load thumbnails (your locator set). :contentReference[oaicite:6]{index=6}
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 7; i++) {
             try {
                 if (isDisplayed(nextBtn)) {
                     for (int j = 0; j < 40; j++) {
