@@ -628,7 +628,7 @@ public class StaffDashboardPageTest extends Base {
             } catch (Exception e) {
                 if(e.getMessage().startsWith(
                         "no such element: Unable to locate element: {\"method\":\"xpath\",\"selector\":\"//div[@class='filepond--image-preview-wrapper']\"}")){
-                    logSkipped(city, store, e, 0);
+                    logSkipped(city, store, e, 0,"check_upload");
                 }
                 skipCount++;
             }
