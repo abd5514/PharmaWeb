@@ -115,7 +115,7 @@ public class StaffDashboardPageTest extends Base {
         // 🔑 Run Riyadh first if present
         if (cities.contains("Riyadh")) {
             System.out.println("🏙 Processing city (priority): Riyadh");
-            int[] counts = processCity("Riyadh", imageUploader, staffDashboardPage);
+            int[] counts = staffDashboardPage.processCity(driver,"Riyadh", imageUploader, staffDashboardPage);
             uploadCount += counts[0];
             skipCount += counts[1];
         }
@@ -124,7 +124,7 @@ public class StaffDashboardPageTest extends Base {
         for (String city : cities) {
             if ("Riyadh".equalsIgnoreCase(city)) continue; // skip Riyadh (already done)
             System.out.println("🏙 Processing city: " + city);
-            int[] counts = processCity(city, imageUploader, staffDashboardPage);
+            int[] counts = staffDashboardPage.processCity(driver,city, imageUploader, staffDashboardPage);
             uploadCount += counts[0];
             skipCount += counts[1];
             /*staticWait(300000); // 5 min break between cities*/
@@ -133,179 +133,6 @@ public class StaffDashboardPageTest extends Base {
         // ✅ Final summary
         System.out.println("🎯 Total stores uploaded: " + uploadCount + " | skipped: " + skipCount);
     }
-
-    private int[] processCity(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
-        int uploadCount = 0;
-        int skipCount = 0;
-        int j=0;
-        List<String> storeFolders = imageUploader.getStoreFolderNames(city);
-        for (int i = j; i <storeFolders.size(); i++) {
-            String store = storeFolders.get(i);
-            String storeXpath = /*"//span[normalize-space()='" + store + "']";*/"//div[@data-store='id_"+store+"']//span";
-            //div[@data-store='id_نمق كافيه | Namq Cafe']
-            //div[@data-store='product_AteeqTea']//span
-            String storeSearch = store.replace(" ", "+");
-            List<String> images = imageUploader.getImagePathsInFolder(city, store);
-            if (images.isEmpty()) {
-                logSkipped(city, store, null, 0);
-                skipCount++;
-                continue;
-            }
-            else if(images.size()>30){
-                CSVLogger.logSkipped(city, store, null, images.size());
-                skipCount++;
-                continue;
-            }
-            try {
-                String filterUrl = getXMLData("baseuploaderUrl")
-                        + "?tableFilters[city][value]=" + city
-                        + "&tableSearch=" + storeSearch;
-                driver.get(filterUrl);
-                staticWait(100);
-                /*int products = 0;
-                try {
-                    products = Integer.parseInt(
-                            driver.findElement(By.xpath("//div[@data-store='product_"+store+"']//span")).getText()
-                    );
-                }catch (Exception e){
-                    String fallbackXpath = "(//span[contains(normalize-space(),'" + store + "')])[4]";
-                    products = Integer.parseInt(
-                            driver.findElement(By.xpath(fallbackXpath + "/ancestor::tr//td[13]//span")).getText()
-                    );
-                }*/
-                try {
-                    driver.findElement(By.xpath(storeXpath)).click();
-                } catch (NoSuchElementException ex) {
-                    storeXpath = "//div[contains(@data-store,'id_" + store + "')]//span";
-                    System.out.println("⚠️ Fallback to: " + storeXpath);
-                    driver.findElement(By.xpath(storeXpath)).click();
-                }
-
-                pageBottom();
-                int waitTime;
-                if(images.size()<3){ waitTime=images.size()*1000;}
-                else {waitTime =images.size()*700;}
-                staticWait(800);
-//                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
-                staffDashboardPage.uploadInput.clear();
-                staticWait(800);
-                imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
-                staticWait(500);
-                pageBottom();
-                pageBottom();
-                waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
-                pageBottom();
-                pageBottom();
-                staticWait(1200);
-                staffDashboardPage.uploadBtn.click();
-                clickUntilElementFound(driver,staffDashboardPage.uploadBtn,staffDashboardPage.savePopup,20);
-//                try{staffDashboardPage.uploadBtn.click();}catch (Exception ignored){}
-                System.out.printf("✅ [%s] Store %s uploaded (%d images)%n", city, store, images.size());
-                uploadCount++;
-                staticWait(waitTime);
-                /*// 🔎 Use dynamic wait instead of fixed sleep
-                driver.get(filterUrl);
-                staticWait(200);
-                products = waitForProductsAboveZero(driver, store,images.size(),filterUrl);
-                System.out.println("📦 Products AFTER upload for store [" + store + "]: " + products);
-
-                if (products <= 0) {
-                    CSVLogger.logSkipped(city, store, null, images.size());
-                    skipCount++;
-                }*/
-                System.out.println("current loop  " + i + " store   " + store + " uploaded");
-            } catch (Exception e) {
-                logSkipped(city, store, e, 0);
-                System.out.println("current loop  " + i + " store   " + store + " skipped");
-                skipCount++;
-            }
-        }
-        return new int[]{uploadCount, skipCount};
-    }
-
-    /**
-     * Dynamic wait until product count > 0 for the given store row.
-     */
-    private int waitForProductsAboveZero(WebDriver driver, String storeXpath,int imagesCount,String url) {
-        WebElement span = driver.findElement(By.xpath("//span[normalize-space()='" + storeXpath + "']/ancestor::tr//td[13]//span"));
-        System.out.println("Found span text = " + span.getText());
-        int timeoutSeconds;
-        if(imagesCount<2){timeoutSeconds=imagesCount*120;}
-        else{timeoutSeconds = imagesCount*80;}
-        Wait<WebDriver> wait = new FluentWait<>(driver)
-                .withTimeout(Duration.ofSeconds(timeoutSeconds))  // <-- Add timeout
-                .pollingEvery(Duration.ofMillis(10000))
-                .ignoring(NoSuchElementException.class)
-                .ignoring(StaleElementReferenceException.class);
-
-        /*return wait.until(d -> {
-            WebElement span1 = d.findElement(By.xpath(storeXpath + "/ancestor::tr//td[12]//span"));
-            String text = span1.getText().trim();
-            if (!text.isEmpty() && text.matches("\\d+")) {
-                int value = Integer.parseInt(text);
-                if (value > 0) {
-                    return value;
-                }
-            }
-            return null; // keep polling
-        });*/
-        /*return wait.until(d -> {
-            try {
-                try {
-                    driver.get(url);
-                    String text = span1.getText().trim();
-                    System.out.println("DEBUG -> Found text: '" + text + "'");
-                    if (!text.isEmpty() && text.matches("\\d+")) {
-                        int value = Integer.parseInt(text);
-                        if (value > 0) {
-                            System.out.println("DEBUG -> Returning value: " + value);
-                            return value;
-                        }
-                    }
-                } catch (Exception e) {
-                    driver.get(url);
-                    String text = span.getText().trim();
-                    System.out.println("DEBUG -> Found text: '" + text + "'");
-                    if (!text.isEmpty() && text.matches("\\d+")) {
-                        int value = Integer.parseInt(text);
-                        if (value > 0) {
-                            System.out.println("DEBUG -> Returning value: " + value);
-                            return value;
-                        }
-                    }
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("DEBUG -> NumberFormatException: " + e.getMessage());
-            }
-            return null; // keep polling
-        });*/
-        return wait.until(d -> {
-            try {
-                d.get(url); // careful: this reloads page every poll
-                WebElement spanCandidate;
-                try {
-                    spanCandidate = d.findElement(By.xpath("(//span[contains(normalize-space(),'" + storeXpath + "')])[4]/ancestor::tr//td[13]//span"));
-                } catch (NoSuchElementException e1) {
-                    spanCandidate = d.findElement(By.xpath("//span[normalize-space()='" + storeXpath + "']/ancestor::tr//td[13]//span"));
-                }
-
-                String text = spanCandidate.getText().trim();
-                System.out.println("DEBUG -> Found text: '" + text + "'"); // ✅ will print every poll
-
-                if (!text.isEmpty() && text.matches("\\d+")) {
-                    int value = Integer.parseInt(text);
-                    if (value > 0) {
-                        System.out.println("DEBUG -> Returning value: " + value);
-                        return value;
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("DEBUG -> Exception in poll: " + e.getMessage());
-            }
-            return null; // keep polling
-        });
-    }
-
     /*
      * new uploader with city and run riyadh first
      * end

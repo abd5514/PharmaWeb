@@ -100,16 +100,11 @@ public class CSVLogger {
                 msg="images not uploaded correctly";
             }
             String safeMessage;
-            if(exception.getMessage().startsWith(
-                    "no such element: Unable to locate element: {\"method\":\"xpath\",\"selector\":\"//div[@class='filepond--image-preview-wrapper']\"}")){
-                safeMessage="images not uploaded on server correctly";
-            }else {
-                safeMessage = (exception != null)
+            safeMessage = (exception != null)
                         ? exception.getMessage()
                         .replace(",", ";")
                         .replaceAll("[\\r\\n]+", " ")
                         : msg;
-            }
             writer.write(cityName + "," + storeName + "," + safeMessage + System.lineSeparator());
 
         } catch (IOException e) {

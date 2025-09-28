@@ -110,6 +110,19 @@ public class FastGoogleMapPage {
             saveFailedDownload("cannot create dir", dir.getAbsolutePath(), null, loopId);
             return;
         }
+        /*
+        String basePath = "src/test/resources/images/" + sanitizeForWindows(storeName);
+        File dir = new File(basePath);
+        // 🔄 If already exists, append timestamp
+        if (dir.exists()) {
+            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            dir = new File(basePath + "_" + timestamp);
+        }
+        // ✅ Create the directory
+        if (!dir.mkdirs()) {
+            saveFailedDownload("cannot create dir", dir.getAbsolutePath(), null, loopId);
+            return;
+        }*/
 
         // Download concurrently (bounded)
         int parallel = Math.max(1, perPlaceConcurrency);
