@@ -8,6 +8,7 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.*;
 import org.tab.data.NewImageUploader;
 import org.tab.utils.CSVLogger;
+import org.utils.PDFConverter;
 import org.testng.Assert;
 
 import java.time.Duration;
@@ -114,6 +115,12 @@ public class StaffDashboardPage {
 //                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
                 staffDashboardPage.uploadInput.clear();
                 staticWait(800);
+                try {
+                    PDFConverter.main(store);
+                } catch (Exception e) {
+                    logSkipped(city, store, e, images.size());
+                    continue;
+                }
                 imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
                 staticWait(500);
                 pageBottom();

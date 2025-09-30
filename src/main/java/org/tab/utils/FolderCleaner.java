@@ -67,7 +67,8 @@ public class FolderCleaner {
                 });
     }
 }
-*//*
+*/
+/*
 
 
 package org.tab.utils;
@@ -168,7 +169,7 @@ public class FolderCleaner {
         cleanFolders();
     }
 
-    public static void cleanFolders() {
+    /*public static void cleanFolders() {
         try {
             // Collect all skipped stores across all city-specific CSVs
             Set<String> skippedPaths = new HashSet<>();
@@ -219,6 +220,91 @@ public class FolderCleaner {
                     String relativePath = cityFolder.getName() + "/" + storeFolder.getName();
 
                     if (skippedPaths.contains(relativePath)) {
+                        // Move skipped store to SKIPPED/<City>/<Store>
+                        Path target = Paths.get(SKIPPED_DIR, cityFolder.getName(), storeFolder.getName());
+                        moveDirectory(storeFolder.toPath(), target);
+                        System.out.println("✅ Moved skipped: " + relativePath + " -> " + target);
+                    } else {
+                        // Move uploaded store to ARCHIVE/<City>/<Store>
+                        Path target = Paths.get(ARCHIVE_DIR, cityFolder.getName(), storeFolder.getName());
+                        moveDirectory(storeFolder.toPath(), target);
+                        System.out.println("🗂️ Archived: " + relativePath + " -> " + target);
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Utility method to move folder
+    private static void moveDirectory(Path source, Path target) throws IOException {
+        if (Files.notExists(source)) return;
+
+        // Ensure destination parent exists (creates City folder inside skipped or done_upload)
+        Files.createDirectories(target.getParent());
+
+        try {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            System.err.println("⚠️ Failed to move " + source + " -> " + target + ": " + e.getMessage());
+        }
+    }*/
+
+    public static void cleanFolders() {
+        try {
+            // Collect all skipped stores across all city-specific CSVs
+            Set<String> skippedPaths = new HashSet<>();
+
+            File logDir = new File(LOG_DIR);
+            File[] logFiles = logDir.listFiles((dir, name) -> name.startsWith("skipped_stores_") && name.endsWith(".csv"));
+
+            boolean csvFound = (logFiles != null && logFiles.length > 0);
+
+            if (csvFound) {
+                for (File logFile : logFiles) {
+                    skippedPaths.addAll(
+                            Files.lines(logFile.toPath(), StandardCharsets.UTF_8)
+                                    .skip(1) // skip header
+                                    .map(line -> {
+                                        String[] parts = line.split(",", 3);
+                                        if (parts.length >= 2) {
+                                            String city = parts[0].trim();
+                                            String store = parts[1].trim();
+                                            return city + "/" + store;
+                                        }
+                                        return null;
+                                    })
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toSet())
+                    );
+                }
+            } else {
+                System.out.println("⚠️ No skipped_stores CSV files found in " + LOG_DIR + " → archiving all stores.");
+            }
+
+            // Now scan targetDir (images/<City>/<Store>)
+            File targetDir = new File(TARGET_DIR);
+            if (!targetDir.exists() || !targetDir.isDirectory()) {
+                System.err.println("❌ Target directory not found: " + TARGET_DIR);
+                return;
+            }
+
+            File[] cityFolders = targetDir.listFiles(File::isDirectory);
+            if (cityFolders == null) {
+                System.out.println("⚠️ No city folders found inside: " + TARGET_DIR);
+                return;
+            }
+
+            for (File cityFolder : cityFolders) {
+                File[] storeFolders = cityFolder.listFiles(File::isDirectory);
+                if (storeFolders == null) continue;
+
+                for (File storeFolder : storeFolders) {
+                    String relativePath = cityFolder.getName() + "/" + storeFolder.getName();
+
+                    if (csvFound && skippedPaths.contains(relativePath)) {
                         // Move skipped store to SKIPPED/<City>/<Store>
                         Path target = Paths.get(SKIPPED_DIR, cityFolder.getName(), storeFolder.getName());
                         moveDirectory(storeFolder.toPath(), target);
