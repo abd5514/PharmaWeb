@@ -57,10 +57,13 @@ public class NewImageUploader {
             File[] files = storeDir.listFiles((dir, name) ->
                     name.toLowerCase().endsWith(".png")
                             || name.toLowerCase().endsWith(".jpg")
-                            || name.toLowerCase().endsWith(".jpeg"));
+                            || name.toLowerCase().endsWith(".jpeg")
+                            || name.toLowerCase().endsWith(".pdf"));
             if (files != null) {
                 for (File f : files) {
-                    imagePaths.add(f.getAbsolutePath());
+                    if (!f.getName().toLowerCase().endsWith(".pdf")) {
+                        imagePaths.add(f.getAbsolutePath());
+                    }
                 }
             }
         } else {

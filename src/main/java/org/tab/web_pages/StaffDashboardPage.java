@@ -114,14 +114,16 @@ public class StaffDashboardPage {
 //                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
                 staffDashboardPage.uploadInput.clear();
                 staticWait(800);
-                pdfPath = city + "/" + store;
-                try {
+                pdfPath = getXMLData("pdfPath") + city + "/" + store;
+                System.out.println("Converting PDFs in path: " + pdfPath);
+                PDFConverter.callMain(pdfPath);
+                /*try {
                     PDFConverter.callMain(pdfPath);
                 } catch (Exception e) {
                     System.out.println("⚠️ PDF conversion error (if any): " + e.getMessage());
                     logSkipped(city, store, e, images.size());
                     continue;
-                }
+                }*/
                 imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
                 staticWait(500);
                 pageBottom();

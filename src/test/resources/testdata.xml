@@ -21,4 +21,5 @@
     Jazan
     Riyadh-->
     <baseuploaderUrl>https://menuiq.tabsense.ai/admin-panel-new/stores</baseuploaderUrl>
+    <pdfPath>src/test/resources/images/</pdfPath>
 </testdata>
