@@ -1,14 +1,12 @@
 package org.tab.web_pages;
 
 import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.*;
 import org.tab.data.NewImageUploader;
 import org.tab.utils.CSVLogger;
-import org.utils.PDFConverter;
+import org.tab.utils.PDFConverter;
 import org.testng.Assert;
 
 import java.time.Duration;
@@ -64,6 +62,7 @@ public class StaffDashboardPage {
         int uploadCount = 0;
         int skipCount = 0;
         int j=0;
+        String pdfPath;
         List<String> storeFolders = imageUploader.getStoreFolderNames(city);
         for (int i = j; i <storeFolders.size(); i++) {
             String store = storeFolders.get(i);
@@ -115,9 +114,11 @@ public class StaffDashboardPage {
 //                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
                 staffDashboardPage.uploadInput.clear();
                 staticWait(800);
+                pdfPath = city + "/" + store;
                 try {
-                    PDFConverter.main(store);
+                    PDFConverter.callMain(pdfPath);
                 } catch (Exception e) {
+                    System.out.println("⚠️ PDF conversion error (if any): " + e.getMessage());
                     logSkipped(city, store, e, images.size());
                     continue;
                 }

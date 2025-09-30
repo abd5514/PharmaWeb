@@ -1,4 +1,4 @@
-package org.utils;
+package org.tab.utils;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -32,7 +32,7 @@ public class PDFConverter {
         }
     }
 
-    public static void main(String path) {
+    public static void callMain(String path) {
         File dir = new File(path); // <-- change your path
 
         File[] files = dir.listFiles((d, name) -> name.toLowerCase().endsWith(".pdf"));
@@ -49,5 +49,9 @@ public class PDFConverter {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void main(String[] args){
+        callMain("src/test/resources/images/Jeddah/360 Cafe"); // <-- change your path
     }
 }
