@@ -16,6 +16,7 @@ import org.testng.Assert;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -96,7 +97,7 @@ public class StaffDashboardPageTest extends Base {
     * start
     * */
     @Test(description = "menu image uploader new (per city)")
-    public void newMenuUploaderWithRiyadhFirst() {
+    public void newMenuUploaderWithRiyadhFirst() throws IOException {
         int skipCount = 0;
         int uploadCount = 0;
 
@@ -362,7 +363,7 @@ public class StaffDashboardPageTest extends Base {
     * check uploader stores start
     * */
     @Test(description = "check upload status with logging not uploaded correctly")
-    public void checkImageUpload() {
+    public void checkImageUpload() throws IOException {
         int skipCount = 0;
         int uploadCount = 0;
 
@@ -400,7 +401,7 @@ public class StaffDashboardPageTest extends Base {
         System.out.println("🎯 Total stores uploaded: " + uploadCount + " | skipped: " + skipCount);
     }
 
-    private int[] processCityUpload(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
+    private int[] processCityUpload(String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) throws IOException {
         int uploadCount = 0;
         int skipCount = 0;
         int j=0;

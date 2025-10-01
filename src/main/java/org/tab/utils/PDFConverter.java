@@ -147,15 +147,18 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 public class PDFConverter {
 
-    public static void convertPdfToPng(File pdfFile) throws IOException {
+    public static List<String> convertPdfToPng(File pdfFile) throws IOException {
+
         if (!pdfFile.getName().toLowerCase().endsWith(".pdf")) {
             System.out.println("❌ Not a PDF file: " + pdfFile.getName());
-            return;
+            return null;
         }
-
+        List<String> paths=new java.util.ArrayList<>();
         String baseName = pdfFile.getName().replaceFirst("[.][^.]+$", "");
         File parentDir = pdfFile.getParentFile();
 
@@ -166,7 +169,7 @@ public class PDFConverter {
             // ✅ First validate all pages
             for (int i = 0; i < totalPages; i++) {
                 BufferedImage image = renderer.renderImageWithDPI(i, 300); // high quality
-                if (image.getHeight() > 10000) {
+                if (image.getHeight() > 8500) {
                     throw new IOException(String.format(
                             "❌ Skipping folder [%s], page %d too large (height=%d)",
                             parentDir.getAbsolutePath(), (i + 1), image.getHeight()
@@ -180,8 +183,10 @@ public class PDFConverter {
                 File outputFile = new File(parentDir, baseName + "_page_" + (i + 1) + ".png");
                 ImageIO.write(image, "PNG", outputFile);
                 System.out.println("✅ Saved: " + outputFile.getAbsolutePath());
+                paths.addAll(Collections.singleton(outputFile.getAbsolutePath()));
             }
         }
+        return paths;
     }
 
     public static void callMain(String path) {

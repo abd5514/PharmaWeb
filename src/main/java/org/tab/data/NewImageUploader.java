@@ -2,9 +2,11 @@ package org.tab.data;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.tab.utils.PDFConverter;
 import org.tab.utils.PropReader;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.*;
 import java.time.Duration;
 import java.util.*;
@@ -49,10 +51,10 @@ public class NewImageUploader {
         return storeNames;
     }
 
-    public List<String> getImagePathsInFolder(String city, String store) {
+    public List<String> getImagePathsInFolder(String city, String store) throws IOException {
         List<String> imagePaths = new ArrayList<>();
         File storeDir = baseDir.resolve(city).resolve(store).toFile();
-
+        List<String> convertedPaths;
         if (storeDir.exists() && storeDir.isDirectory()) {
             File[] files = storeDir.listFiles((dir, name) ->
                     name.toLowerCase().endsWith(".png")
@@ -63,6 +65,10 @@ public class NewImageUploader {
                 for (File f : files) {
                     if (!f.getName().toLowerCase().endsWith(".pdf")) {
                         imagePaths.add(f.getAbsolutePath());
+                    }else {
+                        // Convert PDF to PNG and add the PNG paths
+                        convertedPaths = PDFConverter.convertPdfToPng(f);
+                        imagePaths.addAll(convertedPaths);
                     }
                 }
             }

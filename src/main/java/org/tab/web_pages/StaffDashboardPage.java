@@ -9,6 +9,7 @@ import org.tab.utils.CSVLogger;
 import org.tab.utils.PDFConverter;
 import org.testng.Assert;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 
@@ -58,11 +59,10 @@ public class StaffDashboardPage {
         }
     }
 
-    public int[] processCity(WebDriver driver,String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) {
+    public int[] processCity(WebDriver driver,String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) throws IOException {
         int uploadCount = 0;
         int skipCount = 0;
         int j=0;
-        String pdfPath;
         List<String> storeFolders = imageUploader.getStoreFolderNames(city);
         for (int i = j; i <storeFolders.size(); i++) {
             String store = storeFolders.get(i);
@@ -70,10 +70,15 @@ public class StaffDashboardPage {
             store = store.replaceAll("_[0-9]{8}_[0-9]{6}$", "");*/
             String storeXpath = /*"//span[normalize-space()='" + store + "']";*/"//div[@data-store='id_"+store+"']//span";
             String storeSearch = store.replace(" ", "+");
-            List<String> images = imageUploader.getImagePathsInFolder(city, store);
+            List<String> images = null;
+            try {
+                images = imageUploader.getImagePathsInFolder(city, store);
+            } catch (IOException e) {
+                logSkipped(city, store, e, 0);
+                continue;
+            }
             if (images.isEmpty()) {
                 logSkipped(city, store, null, 0);
-                skipCount++;
                 continue;
             }
             else if(images.size()>30){
@@ -114,13 +119,6 @@ public class StaffDashboardPage {
 //                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
                 staffDashboardPage.uploadInput.clear();
                 staticWait(800);
-                pdfPath = getXMLData("pdfPath") + city + "/" + store;
-                try {
-                    PDFConverter.callMain(pdfPath);
-                } catch (Exception e) {
-                    logSkipped(city, store, e, images.size());
-                    continue;
-                }
                 imageUploader.uploadAllAtOnce(driver, staffDashboardPage.uploadInput, images);
                 staticWait(500);
                 pageBottom();
