@@ -105,7 +105,7 @@ public class FastGoogleMapPage {
         }
 
         // Prepare target dir per store (clean once per run)
-        File dir = new File("src/test/resources/images/" + sanitizeForWindows(storeName));
+        File dir = new File("src/test/resources/images/" +getCityName()+ "/" + sanitizeForWindows(storeName));
         if (!dir.exists() && !dir.mkdirs()) {
             saveFailedDownload("cannot create dir", dir.getAbsolutePath(), null, loopId);
             return;
@@ -251,4 +251,14 @@ public class FastGoogleMapPage {
     }
 
     private static String safeCsv(String s) { return s == null ? "" : s.replace("\"","'"); }
+
+    private static String getCityName() {
+        String path = System.getProperty("JSONFilePath", "Riyadh_details.json"); // fallback
+        String filename = path.contains("/") ?
+                path.substring(path.lastIndexOf("/") + 1) :
+                path.contains("\\") ?
+                        path.substring(path.lastIndexOf("\\") + 1) :
+                        path; // fallback if just filename
+        return filename.split("_")[0];
+    }
 }

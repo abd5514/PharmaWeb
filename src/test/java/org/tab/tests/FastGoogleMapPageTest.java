@@ -69,7 +69,6 @@ public class FastGoogleMapPageTest {
                     } catch (Exception ignored) {}*/
 
                     FastGoogleMapPage page = new FastGoogleMapPage(driver);
-
                     while (true) {
                         Item it = queue.poll(200, TimeUnit.MILLISECONDS);
                         if (it == null) break; // no more work
@@ -96,6 +95,8 @@ public class FastGoogleMapPageTest {
         // Wait for all workers to finish
         done.await();
     }
+
+
 
     /* ------------ Local, fast, headless Chrome (independent per worker) ------------ */
 
