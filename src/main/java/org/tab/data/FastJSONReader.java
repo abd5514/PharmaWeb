@@ -26,7 +26,7 @@ public class FastJSONReader {
 
     /** Loads JSON from PropReader key "JSONFilePath" (or default path). */
     public FastJSONReader() throws IOException {
-        this(PropReader.get("JSONFilePath", "src/test/resources/Riyadh_details.json"));
+        this(PropReader.get("JSONFilePath", "src/test/resources/Jeddah_details.json"));
     }
 
     /** Load from explicit file path. */

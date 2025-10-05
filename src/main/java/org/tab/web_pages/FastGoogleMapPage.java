@@ -253,7 +253,7 @@ public class FastGoogleMapPage {
     private static String safeCsv(String s) { return s == null ? "" : s.replace("\"","'"); }
 
     private static String getCityName() {
-        String path = System.getProperty("JSONFilePath", "Riyadh_details.json"); // fallback
+        String path = System.getProperty("JSONFilePath","src/test/resources/Jeddah_details.json"); // fallback
         String filename = path.contains("/") ?
                 path.substring(path.lastIndexOf("/") + 1) :
                 path.contains("\\") ?
@@ -261,4 +261,20 @@ public class FastGoogleMapPage {
                         path; // fallback if just filename
         return filename.split("_")[0];
     }
+
+    /*private static String getCityName() {
+        String path = System.getProperty("JSONFilePath"); // must be set by you at runtime
+
+        // cross-platform: get filename from path
+        String filename = new File(path).getName(); // e.g., "Jeddah_details.json"
+
+        // remove extension
+        int dot = filename.lastIndexOf('.');
+        if (dot > 0) filename = filename.substring(0, dot); // "Jeddah_details"
+
+        // split on underscore, dash, or whitespace and take first token
+        String[] tokens = filename.split("[_\\-\\s]+");
+        return tokens.length > 0 ? tokens[0] : filename;
+    }*/
+
 }
