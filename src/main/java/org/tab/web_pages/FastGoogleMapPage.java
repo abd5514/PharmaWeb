@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import org.tab.utils.PropReader;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -253,7 +254,7 @@ public class FastGoogleMapPage {
     private static String safeCsv(String s) { return s == null ? "" : s.replace("\"","'"); }
 
     private static String getCityName() {
-        String path = System.getProperty("JSONFilePath","src/test/resources/Jeddah_details.json"); // fallback
+        String path = PropReader.get("JSONFilePath","src/test/resources/Riyadh_details.json"); // fallback
         String filename = path.contains("/") ?
                 path.substring(path.lastIndexOf("/") + 1) :
                 path.contains("\\") ?

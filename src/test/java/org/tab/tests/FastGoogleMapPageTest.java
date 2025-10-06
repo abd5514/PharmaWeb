@@ -43,7 +43,7 @@ public class FastGoogleMapPageTest {
         * */
         // Tunables
         int workers = Integer.parseInt(System.getProperty("workers", "6"));               // parallel WebDrivers
-        int perPlaceDownloads = Integer.parseInt(System.getProperty("perPlaceDownloads", "6")); // per-place parallel downloads
+        int perPlaceDownloads = Integer.parseInt(System.getProperty("perPlaceDownloads", "4")); // per-place parallel downloads
 
         System.out.printf("Items=%d, workers=%d, perPlaceDownloads=%d%n", items.size(), workers, perPlaceDownloads);
 
