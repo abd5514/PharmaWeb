@@ -95,7 +95,7 @@ public class CSVLogger {
             String msg;
             if(imageCount==0){
                 msg="folder have no image";
-            }else if(imageCount>30){msg="have more than 30 images, count is ( " + imageCount + " )";}
+            }else if(imageCount>60){msg="have more than 60 images, count is ( " + imageCount + " )";}
             else{
                 msg="images not uploaded correctly";
             }
