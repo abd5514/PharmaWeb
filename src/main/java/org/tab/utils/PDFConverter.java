@@ -138,6 +138,7 @@ public class PDFConverter {
 }
 */
 
+/*
 package org.tab.utils;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -213,3 +214,72 @@ public class PDFConverter {
     }
 }
 
+*/
+package org.tab.utils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import org.apache.pdfbox.pdmodel.graphics.color.PDICCBased;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.cos.COSName;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PDFConverter {
+
+    public static List<String> convertPdfToPng(File pdfFile) throws IOException {
+
+        if (!pdfFile.getName().toLowerCase().endsWith(".pdf")) {
+            System.out.println("❌ Not a PDF file: " + pdfFile.getName());
+            return null;
+        }
+
+        List<String> paths = new ArrayList<>();
+        String baseName = pdfFile.getName().replaceFirst("[.][^.]+$", "");
+        File parentDir = pdfFile.getParentFile();
+
+        try (PDDocument document = PDDocument.load(pdfFile)) {
+
+            // ✅ Check for PDICCBased ICC profile before rendering
+            boolean hasICC = false;
+            for (PDPage page : document.getPages()) {
+                PDResources resources = page.getResources();
+                if (resources == null) continue;
+
+                for (COSName csName : resources.getColorSpaceNames()) {
+                    PDColorSpace cs = resources.getColorSpace(csName);
+                    if (cs instanceof PDICCBased) {
+                        hasICC = true;
+                        break;
+                    }
+                }
+
+                if (hasICC) break;
+            }
+
+            if (hasICC) {
+                throw new IOException("❌ Skipping PDF due to PDICCBased ICC profile");
+            }
+
+            // ✅ Safe to render all pages
+            PDFRenderer renderer = new PDFRenderer(document);
+            int totalPages = document.getNumberOfPages();
+
+            for (int i = 0; i < totalPages; i++) {
+                BufferedImage image = renderer.renderImageWithDPI(i, 300);
+                File outputFile = new File(parentDir, baseName + "_page_" + (i + 1) + ".png");
+                ImageIO.write(image, "PNG", outputFile);
+                System.out.println("✅ Saved: " + outputFile.getAbsolutePath());
+                paths.add(outputFile.getAbsolutePath());
+            }
+        }
+
+        return paths;
+    }
+}

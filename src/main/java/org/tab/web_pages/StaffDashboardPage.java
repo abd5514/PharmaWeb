@@ -63,6 +63,7 @@ public class StaffDashboardPage {
         int uploadCount = 0;
         int skipCount = 0;
         int j=0;
+        if(city.equals("Riyadh")){j=239;}
         List<String> storeFolders = imageUploader.getStoreFolderNames(city);
         for (int i = j; i <storeFolders.size(); i++) {
             String store = storeFolders.get(i);

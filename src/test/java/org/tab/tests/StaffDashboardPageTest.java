@@ -120,10 +120,16 @@ public class StaffDashboardPageTest extends Base {
             uploadCount += counts[0];
             skipCount += counts[1];
         }
-
+        // 🔑 Run Jeddah second if present
+        if (cities.contains("Jeddah")) {
+            System.out.println("🏙 Processing city (priority 2): Jeddah");
+            int[] counts = staffDashboardPage.processCity(driver, "Jeddah", imageUploader, staffDashboardPage);
+            uploadCount += counts[0];
+            skipCount += counts[1];
+        }
         // 🔑 Run all other cities
         for (String city : cities) {
-            if ("Riyadh".equalsIgnoreCase(city)) continue; // skip Riyadh (already done)
+            if ("Riyadh".equalsIgnoreCase(city) || "Jeddah".equalsIgnoreCase(city)) continue; // skip priorities
             System.out.println("🏙 Processing city: " + city);
             int[] counts = staffDashboardPage.processCity(driver,city, imageUploader, staffDashboardPage);
             uploadCount += counts[0];
