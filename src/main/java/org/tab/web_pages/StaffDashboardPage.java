@@ -82,7 +82,7 @@ public class StaffDashboardPage {
                 logSkipped(city, store, null, 0);
                 continue;
             }
-            else if(images.size()>30){
+            else if(images.size()>60){
                 CSVLogger.logSkipped(city, store, null, images.size());
                 skipCount++;
                 continue;
