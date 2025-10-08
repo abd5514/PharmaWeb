@@ -9,6 +9,9 @@ import org.tab.utils.CSVLogger;
 import org.tab.utils.PDFConverter;
 import org.testng.Assert;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
@@ -63,12 +66,14 @@ public class StaffDashboardPage {
         int uploadCount = 0;
         int skipCount = 0;
         int j=0;
-        if(city.equals("Riyadh")){j=239;}
         List<String> storeFolders = imageUploader.getStoreFolderNames(city);
         for (int i = j; i <storeFolders.size(); i++) {
             String store = storeFolders.get(i);
             /*// ✅ Remove trailing timestamp if present
             store = store.replaceAll("_[0-9]{8}_[0-9]{6}$", "");*/
+            // ✅ Read original name from original_name.txt if exists
+            String originalName = readOriginalStoreName(city, store);
+            //String storeXpath = /*"//span[normalize-space()='" + store + "']";*/"//div[@data-store='id_"+originalName+"']//span";
             String storeXpath = /*"//span[normalize-space()='" + store + "']";*/"//div[@data-store='id_"+store+"']//span";
             String storeSearch = store.replace(" ", "+");
             List<String> images = null;
@@ -235,5 +240,24 @@ public class StaffDashboardPage {
             }
             return null; // keep polling
         });
+    }
+
+    /**
+     * Reads the original store name (before sanitization) from the folder’s original_name.txt.
+     * @param city City name used in folder path
+     * @param sanitizedFolderName The sanitized store folder name
+     * @return Original store name if found, otherwise null
+     */
+    private String readOriginalStoreName(String city, String sanitizedFolderName) {
+        File txt = new File("src/test/resources/images/" + city + "/" + sanitizedFolderName + "/original_name.txt");
+        if (txt.exists() && txt.isFile()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(txt))) {
+                String line = br.readLine();
+                if (line != null) {
+                    return line.trim();
+                }
+            } catch (IOException ignored) {}
+        }
+        return null;
     }
 }

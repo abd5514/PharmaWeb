@@ -111,6 +111,7 @@ public class FastGoogleMapPage {
             saveFailedDownload("cannot create dir", dir.getAbsolutePath(), null, loopId);
             return;
         }
+        logOriginalStoreName(dir, storeName, loopId);
         /*
         String basePath = "src/test/resources/images/" + sanitizeForWindows(storeName);
         File dir = new File(basePath);
@@ -175,6 +176,16 @@ public class FastGoogleMapPage {
     private static String sanitizeForWindows(String name) {
         // Keep same spirit as your current code (safe file/folder names). :contentReference[oaicite:7]{index=7}
         return name.replaceAll("[\\\\/:*?\"<>|]", "").trim();
+    }
+
+    private void logOriginalStoreName(File dir, String storeName, int loopId) {
+        try (FileWriter fw = new FileWriter(new File(dir, "original_name.txt"), false);
+             BufferedWriter bw = new BufferedWriter(fw);
+             PrintWriter pw = new PrintWriter(bw)) {
+            pw.println(storeName);
+        } catch (IOException ioe) {
+            saveFailedDownload("failed to write original_name.txt", dir.getAbsolutePath(), ioe, loopId);
+        }
     }
 
     /* ---------- Robust download with redirect/timeout handling ---------- */
