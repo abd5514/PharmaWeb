@@ -149,10 +149,10 @@ public class StaffDashboardPage {
                     CSVLogger.logSkipped(city, store, null, images.size());
                     skipCount++;
                 }*/
-                System.out.println("current loop  " + i + " store   " + store + " uploaded");
+                System.out.println("current loop  " + i + " store  " + store + " uploaded");
             } catch (Exception e) {
                 logSkipped(city, store, e, 0);
-                System.out.println("current loop  " + i + " store   " + store + " skipped");
+                System.out.println("❌ current loop  " + i + " store  " + store + " skipped");
                 skipCount++;
             }
         }
