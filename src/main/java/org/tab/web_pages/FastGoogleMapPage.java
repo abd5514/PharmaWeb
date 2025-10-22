@@ -11,8 +11,10 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -106,14 +108,13 @@ public class FastGoogleMapPage {
         }
 
         // Prepare target dir per store (clean once per run)
-        File dir = new File("src/test/resources/images/" +getCityName()+ "/" + sanitizeForWindows(storeName));
+        /*File dir = new File("src/test/resources/images/" +getCityName()+ "/" + sanitizeForWindows(storeName));
         if (!dir.exists() && !dir.mkdirs()) {
             saveFailedDownload("cannot create dir", dir.getAbsolutePath(), null, loopId);
             return;
-        }
-        logOriginalStoreName(dir, storeName, loopId);
-        /*
-        String basePath = "src/test/resources/images/" + sanitizeForWindows(storeName);
+        }*/
+
+        String basePath = "src/test/resources/images/" +getCityName()+ "/" + sanitizeForWindows(storeName);
         File dir = new File(basePath);
         // 🔄 If already exists, append timestamp
         if (dir.exists()) {
@@ -124,8 +125,8 @@ public class FastGoogleMapPage {
         if (!dir.mkdirs()) {
             saveFailedDownload("cannot create dir", dir.getAbsolutePath(), null, loopId);
             return;
-        }*/
-
+        }
+        logOriginalStoreName(dir, storeName, loopId);
         // Download concurrently (bounded)
         int parallel = Math.max(1, perPlaceConcurrency);
         ExecutorService pool = Executors.newFixedThreadPool(parallel, r -> {
@@ -138,8 +139,8 @@ public class FastGoogleMapPage {
         final int[] idx = {1};
         for (String u : urls) {
             final int myIdx = idx[0]++;
+            String file = new File(dir, "image_" + sanitizeForWindows(storeName) + "_" + myIdx + ".png").getPath();
             futures.add(pool.submit(() -> {
-                String file = new File(dir, "image_" + sanitizeForWindows(storeName) + "_" + myIdx + ".png").getPath();
                 try {
                     downloadImage(u, file);
                 } catch (Exception e) {
