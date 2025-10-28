@@ -473,4 +473,108 @@ public class StaffDashboardPageTest extends Base {
     /*
      * check uploader stores end
      * */
+
+    /*copilot new changes start*/
+    // Add this method to your StaffDashboardPageTest class
+    @Test(description = "menu image uploader new (per city, parallel 6 stores)")
+    public void newMenuUploaderWithRiyadhFirstParallelTest() throws IOException {
+        newMenuUploaderWithRiyadhFirstParallel();
+    }
+    public void newMenuUploaderWithRiyadhFirstParallel() throws IOException {
+        int skipCount = 0;
+        int uploadCount = 0;
+
+        NewImageUploader imageUploader = new NewImageUploader();
+        List<String> cities = imageUploader.getCityFolderNames();
+
+        // Helper to process a city in parallel
+        java.util.function.BiFunction<String, NewImageUploader, int[]> processCityParallel = (city, uploader) -> {
+            int[] result = new int[2];
+            List<String> storeFolders = uploader.getStoreFolderNames(city);
+            ExecutorService executor = Executors.newFixedThreadPool(6);
+            List<Future<int[]>> futures = new ArrayList<>();
+
+            for (String store : storeFolders) {
+                futures.add(executor.submit(() -> {
+                    WebDriver localDriver = createDriver();
+                    StaffDashboardPage staffDashboardPage = new StaffDashboardPage(localDriver);
+                    int localUpload = 0, localSkip = 0;
+                    try {
+                        String storeXpath = "//div[@data-store='id_" + store + "']";
+                        String storeSearch = store.replace(" ", "+");
+                        String filterUrl = getXMLData("baseuploaderUrl")
+                                + "?tableFilters[city][value]=" + city
+                                + "&tableSearch=" + storeSearch;
+                        localDriver.get(filterUrl);
+                        staticWait(500);
+                        List<String> images = uploader.getImagePathsInFolder(city, store);
+                        if (images.isEmpty()) {
+                            logSkipped(city, store, null, 0);
+                            localSkip++;
+                        } else {
+                            staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
+                            staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
+                            staffDashboardPage.loginBtn.click();
+                            waitUntilElementClickable(staffDashboardPage.sideMenuStores);
+                            try {
+                                localDriver.findElement(By.xpath(storeXpath)).click();
+                            } catch (NoSuchElementException ex) {
+                                storeXpath = "//div[contains(@data-store,'id_" + store + "')]";
+                                localDriver.findElement(By.xpath(storeXpath)).click();
+                            }
+                            pageBottom();
+                            staticWait(500);
+                            uploader.uploadAllAtOnce(localDriver, staffDashboardPage.uploadInput, images);
+                            staticWait(200);
+                            waitUntilTextChanged(staffDashboardPage.uploadBtn, "Save changes");
+                            staffDashboardPage.uploadBtn.click();
+                            localUpload++;
+                        }
+                    } catch (Exception e) {
+                        logSkipped(city, store, e, 0);
+                        localSkip++;
+                    } finally {
+                        localDriver.quit();
+                    }
+                    return new int[]{localUpload, localSkip};
+                }));
+            }
+            executor.shutdown();
+            for (Future<int[]> f : futures) {
+                try {
+                    int[] res = f.get();
+                    result[0] += res[0];
+                    result[1] += res[1];
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return result;
+        };
+
+        // Run Riyadh first
+        if (cities.contains("Riyadh")) {
+            System.out.println("🏙 Processing city (priority): Riyadh");
+            int[] counts = processCityParallel.apply("Riyadh", imageUploader);
+            uploadCount += counts[0];
+            skipCount += counts[1];
+        }
+        // Run Jeddah second
+        if (cities.contains("Jeddah")) {
+            System.out.println("🏙 Processing city (priority 2): Jeddah");
+            int[] counts = processCityParallel.apply("Jeddah", imageUploader);
+            uploadCount += counts[0];
+            skipCount += counts[1];
+        }
+        // Run all other cities
+        for (String city : cities) {
+            if ("Riyadh".equalsIgnoreCase(city) || "Jeddah".equalsIgnoreCase(city)) continue;
+            System.out.println("🏙 Processing city: " + city);
+            int[] counts = processCityParallel.apply(city, imageUploader);
+            uploadCount += counts[0];
+            skipCount += counts[1];
+        }
+        System.out.println("🎯 Total stores uploaded: " + uploadCount + " | skipped: " + skipCount);
+    }
+    /*copilot new changes end*/
 }

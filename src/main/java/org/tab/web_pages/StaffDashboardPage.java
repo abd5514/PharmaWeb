@@ -120,7 +120,7 @@ public class StaffDashboardPage {
                 pageBottom();
                 int waitTime;
                 if(images.size()<3){ waitTime=images.size()*1000;}
-                else {waitTime =images.size()*700;}
+                else {waitTime =images.size()*400;}
                 staticWait(800);
 //                System.out.println("📦 Products BEFORE upload for store [" + store + "]: " + products);
                 staffDashboardPage.uploadInput.clear();
@@ -258,6 +258,6 @@ public class StaffDashboardPage {
                 }
             } catch (IOException ignored) {}
         }
-        return null;
+        return sanitizedFolderName;
     }
 }
