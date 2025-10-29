@@ -18,6 +18,7 @@ import java.util.List;
 
 import static org.tab.data.TestDataReader.getXMLData;
 import static org.tab.utils.CSVLogger.logSkipped;
+import static org.tab.utils.CSVLogger.logUrls;
 import static org.tab.utils.common.SharedMethods.*;
 
 public class StaffDashboardPage {
@@ -48,8 +49,10 @@ public class StaffDashboardPage {
     public WebElement imageContainer;
     @FindBy(xpath = "//div[contains(@class,'flex w-full gap-3 p-4')]")
     public WebElement savePopup;
-
-
+    @FindBy(xpath = "//button[@aria-label='Next']")
+    public WebElement nextBtn;
+    @FindBy(xpath = "//table")
+    public WebElement tableElement;
 
     public StaffDashboardPage(WebDriver driver) {
         PageFactory.initElements(driver, this);
@@ -259,5 +262,82 @@ public class StaffDashboardPage {
             } catch (IOException ignored) {}
         }
         return sanitizedFolderName;
+    }
+
+    /**
+     * check zero stores*/
+    /*public void zeroStoresCheck(WebDriver driver,String city, NewImageUploader imageUploader, StaffDashboardPage staffDashboardPage) throws IOException {
+        String filterUrl = getXMLData("baseuploaderUrl");
+        driver.get(filterUrl);
+        while (nextBtn.isDisplayed()) {
+            List<WebElement> rows = driver.findElements(By.cssSelector("table.fi-ta-table tbody tr"));
+            for (WebElement row : rows) {
+                // Store name (Name column)
+                String storeName = row.findElement(By.cssSelector("td.fi-table-cell-name span.fi-ta-text-item-label")).getText().trim();
+                // City (City column)
+                String cityn = row.findElement(By.cssSelector("td.fi-table-cell-city span.fi-ta-text-item-label")).getText().trim();
+                // Google link (Google Link column)
+                WebElement googleLinkElement = row.findElement(By.cssSelector("td.fi-table-cell-url a"));
+                String googleLink = googleLinkElement.getAttribute("href");
+                // Menu count (Menu column)
+                String menuCount = row.findElement(By.cssSelector("td.fi-table-cell-products-count span.fi-ta-text-item-label")).getText().trim();
+                if (Integer.parseInt(menuCount) <= 0) {
+                    logUrls(city, storeName, googleLink);
+                }
+            }
+            nextBtn.click();
+        }
+
+
+    }*/
+
+    public void zeroStoresCheck(WebDriver driver) throws IOException {
+        String filterUrl = getXMLData("baseuploaderUrl");
+        driver.get(filterUrl);
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        boolean hasNext = true;
+        while (hasNext) {
+            // Wait for table to be visible (after each reload)
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("table.fi-ta-table tbody")));
+
+            List<WebElement> rows = driver.findElements(By.cssSelector("table.fi-ta-table tbody tr"));
+            System.out.println("Found rows: " + rows.size());
+
+            for (int i = 0; i < rows.size(); i++) {
+                try {
+                    WebElement row = rows.get(i);
+
+                    String storeName = row.findElement(By.cssSelector("td.fi-table-cell-name span.fi-ta-text-item-label")).getText().trim();
+                    String neighborhood = row.findElement(By.cssSelector("td.fi-table-cell-neighborhood span.fi-ta-text-item-label")).getText().trim();
+                    String cityName = row.findElement(By.cssSelector("td.fi-table-cell-city span.fi-ta-text-item-label")).getText().trim();
+                    String googleLink = row.findElement(By.cssSelector("td.fi-table-cell-url a")).getAttribute("href");
+                    String menuCount = row.findElement(By.cssSelector("td.fi-table-cell-products-count span.fi-ta-text-item-label")).getText().trim();
+
+                    if (Integer.parseInt(menuCount) <= 0) {
+                        logUrls(cityName,neighborhood, storeName, googleLink);
+                    }
+
+                } catch (StaleElementReferenceException e) {
+                    // If page refreshed mid-loop, skip this row and continue safely
+                    System.out.println("⚠️ Skipping stale row, will continue...");
+                    continue;
+                }
+            }
+
+            try {
+                WebElement nextBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button[aria-label='Next']")));
+                if (nextBtn.isDisplayed() && nextBtn.isEnabled()) {
+                    nextBtn.click();
+                    // Wait for the old table to refresh before next loop
+                    wait.until(ExpectedConditions.stalenessOf(rows.get(0)));
+                } else {
+                    hasNext = false;
+                }
+            } catch (TimeoutException | NoSuchElementException e) {
+                hasNext = false;
+            }
+        }
     }
 }

@@ -577,4 +577,23 @@ public class StaffDashboardPageTest extends Base {
         System.out.println("🎯 Total stores uploaded: " + uploadCount + " | skipped: " + skipCount);
     }
     /*copilot new changes end*/
+
+
+    /*new ts start*/
+    @Test(description = "menu image uploader new (per city)")
+    public void checkZeroStores() throws IOException {
+        int skipCount = 0;
+        int uploadCount = 0;
+
+        NewImageUploader imageUploader = new NewImageUploader();
+        StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
+
+        // ✅ Login
+        staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
+        staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
+        staffDashboardPage.loginBtn.click();
+        waitUntilElementClickable(staffDashboardPage.sideMenuStores);
+        staffDashboardPage.zeroStoresCheck(driver);
+    }
+    /*new ts end*/
 }

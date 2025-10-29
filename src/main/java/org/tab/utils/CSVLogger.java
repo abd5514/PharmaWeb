@@ -160,4 +160,33 @@ public class CSVLogger {
             e.printStackTrace();
         }
     }
+
+    public static synchronized void logUrls(String cityName,String Nighborhood, String storeName, String Url) {
+
+        // Each city gets its own skipped_stores_<city>.csv
+        File file = new File(LOG_DIR + "Zero_Stores.csv");
+
+        // Ensure parent directory exists
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+
+        boolean newFile = !file.exists();
+
+        try (OutputStreamWriter writer = new OutputStreamWriter(
+                new FileOutputStream(file, true),
+                StandardCharsets.UTF_8)) {
+
+            // Write BOM + header if file is new
+            if (newFile) {
+                writer.write('\ufeff'); // UTF-8 BOM
+                writer.write("City,Neighborhood,Store,URL" + System.lineSeparator());
+            }
+            writer.write(cityName + ","+ Nighborhood + "," + storeName + "," + Url + System.lineSeparator());
+        } catch (IOException e) {
+            System.err.println("⚠️ Failed to log skipped store: " + storeName + " in city: " + cityName);
+            e.printStackTrace();
+        }
+    }
 }
