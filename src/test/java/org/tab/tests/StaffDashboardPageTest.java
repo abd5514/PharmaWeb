@@ -582,18 +582,13 @@ public class StaffDashboardPageTest extends Base {
     /*new ts start*/
     @Test(description = "menu image uploader new (per city)")
     public void checkZeroStores() throws IOException {
-        int skipCount = 0;
-        int uploadCount = 0;
-
-        NewImageUploader imageUploader = new NewImageUploader();
         StaffDashboardPage staffDashboardPage = new StaffDashboardPage(driver);
-
         // ✅ Login
         staffDashboardPage.userNameInput.sendKeys(getXMLData("staffusername"));
         staffDashboardPage.passwordInput.sendKeys(getXMLData("staffpassword"));
         staffDashboardPage.loginBtn.click();
         waitUntilElementClickable(staffDashboardPage.sideMenuStores);
-        staffDashboardPage.zeroStoresCheck(driver);
+        staffDashboardPage.zeroStoresCheck(driver,"1027");
     }
     /*new ts end*/
 }

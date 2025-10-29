@@ -76,8 +76,8 @@ public class StaffDashboardPage {
             store = store.replaceAll("_[0-9]{8}_[0-9]{6}$", "");*/
             // ✅ Read original name from original_name.txt if exists
             String originalName = readOriginalStoreName(city, store);
-            //String storeXpath = /*"//span[normalize-space()='" + store + "']";*/"//div[@data-store='id_"+originalName+"']//span";
-            String storeXpath = /*"//span[normalize-space()='" + store + "']";*/"//div[@data-store='id_"+store+"']//span";
+            String storeXpath = /*"//span[normalize-space()='" + store + "']";*/"//div[@data-store='id_"+originalName+"']//span";
+//            String storeXpath = /*"//span[normalize-space()='" + store + "']";*/"//div[@data-store='id_"+store+"']//span";
             String storeSearch = store.replace(" ", "+");
             List<String> images = null;
             try {
@@ -340,4 +340,68 @@ public class StaffDashboardPage {
             }
         }
     }
+
+    public void zeroStoresCheck(WebDriver driver, String pageNum) throws IOException {
+        String filterUrl = getXMLData("baseuploaderUrl") + "?page=" + pageNum;
+        driver.get(filterUrl);
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        boolean hasNext = true;
+        while (hasNext) {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("table.fi-ta-table tbody")));
+
+            List<WebElement> rows = driver.findElements(By.cssSelector("table.fi-ta-table tbody tr"));
+            System.out.println("Found rows: " + rows.size());
+
+            for (int i = 0; i < rows.size(); i++) {
+                try {
+                    WebElement row = rows.get(i);
+
+                    String storeName = row.findElement(By.cssSelector("td.fi-table-cell-name span.fi-ta-text-item-label")).getText().trim();
+                    String cityName = safeGetText(row, "td.fi-table-cell-city span.fi-ta-text-item-label");
+                    String neighborhood = safeGetText(row, "td.fi-table-cell-neighborhood span.fi-ta-text-item-label");
+                    String googleLink = row.findElement(By.cssSelector("td.fi-table-cell-url a")).getAttribute("href");
+                    String menuCount = safeGetText(row, "td.fi-table-cell-products-count span.fi-ta-text-item-label");
+
+                    if (menuCount.isEmpty()) menuCount = "0";
+
+                    if (Integer.parseInt(menuCount) <= 0) {
+                        logUrls(cityName,neighborhood, storeName, googleLink);
+                    }
+
+                } catch (StaleElementReferenceException e) {
+                    System.out.println("⚠️ Stale row, skipping...");
+                } catch (NoSuchElementException e) {
+                    System.out.println("⚠️ Missing data in row, skipping...");
+                }
+            }
+
+            try {
+                WebElement nextBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button[aria-label='Next']")));
+                if (nextBtn.isDisplayed() && nextBtn.isEnabled()) {
+                    nextBtn.click();
+                    wait.until(ExpectedConditions.stalenessOf(rows.get(0)));
+                } else {
+                    hasNext = false;
+                }
+            } catch (TimeoutException | NoSuchElementException e) {
+                hasNext = false;
+            }
+        }
+    }
+
+    /**
+     * Helper to safely get inner text, return "N/A" if element missing or empty.
+     */
+    private String safeGetText(WebElement parent, String cssSelector) {
+        try {
+            WebElement el = parent.findElement(By.cssSelector(cssSelector));
+            String text = el.getText().trim();
+            return text.isEmpty() ? "N/A" : text;
+        } catch (NoSuchElementException e) {
+            return "N/A";
+        }
+    }
+
 }
